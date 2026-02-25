@@ -1,0 +1,207 @@
+@extends('layouts.app')
+
+@section('title', 'Notificações - Discofor')
+
+@section('content')
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6 mb-0">
+                    <i class="bi bi-bell"></i> Notificações
+                </h1>
+                @if(auth()->user()->unreadNotificationsCount() > 0)
+                    <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()">
+                        <i class="bi bi-check-all"></i> Marcar todas como lidas
+                    </button>
+                @endif
+            </div>
+
+            @forelse($notifications as $notification)
+                <div class="card mb-3 border-0 shadow-sm {{ $notification->is_read ? 'bg-light' : 'bg-white' }}"
+                     id="notification-{{ $notification->id }}">
+                    <div class="card-body">
+                        <div class="d-flex gap-3 justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <!-- Notification Icon -->
+                                <div class="mb-2">
+                                    @if($notification->type === 'new_comment')
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-chat-left-text"></i> Comentário
+                                        </span>
+                                    @elseif($notification->type === 'new_like')
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-hand-thumbs-up"></i> Curtida
+                                        </span>
+                                    @elseif($notification->type === 'new_debate')
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-chat-dots"></i> Debate
+                                        </span>
+                                    @elseif($notification->type === 'article_approved')
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Aprovado
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-info-circle"></i> Sistema
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <h6 class="mb-1">{{ $notification->title }}</h6>
+                                <p class="mb-2 text-muted">{{ $notification->content }}</p>
+
+                                <small class="text-muted">
+                                    {{ $notification->created_at->diffForHumans() }}
+                                </small>
+
+                                <!-- Action Link -->
+                                @if($notification->article_id)
+                                    <div class="mt-2">
+                                        <a href="{{ route('articles.show', $notification->article->slug) }}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           onclick="markAsRead(event, {{ $notification->id }})">
+                                            <i class="bi bi-arrow-right"></i> Ver Artigo
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="btn-group btn-group-sm">
+                                @if(!$notification->is_read)
+                                    <button class="btn btn-outline-secondary" onclick="markAsRead(event, {{ $notification->id }})">
+                                        <i class="bi bi-check"></i> Ler
+                                    </button>
+                                @endif
+                                <button class="btn btn-outline-danger" onclick="deleteNotification({{ $notification->id }})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 2rem; opacity: 0.3;"></i>
+                    <p class="mt-3 mb-0">Você está em dia com todas as notificações!</p>
+                </div>
+            @endforelse
+
+            <!-- Pagination -->
+            {{ $notifications->links('vendor.pagination.bootstrap-5') }}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Stats Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="mb-3">Resumo</h6>
+                    <div class="mb-2">
+                        <p class="mb-1 small text-muted">Notificações não lidas</p>
+                        <h4 id="unread-count">{{ auth()->user()->unreadNotificationsCount() }}</h4>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 small text-muted">Total de notificações</p>
+                        <h4>{{ auth()->user()->notifications()->count() }}</h4>
+                    </div>
+                    @if(auth()->user()->notifications()->count() > 0)
+                        <form action="{{ route('notifications.clear-all') }}" method="POST"
+                              onsubmit="return confirm('Tem certeza que deseja limpar todas as notificações?')">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="bi bi-trash"></i> Limpar Todas
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Notification Types Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">Tipos de Notificação</h6>
+                    <div class="small">
+                        <div class="d-flex gap-2 align-items-center mb-2">
+                            <span class="badge bg-info"><i class="bi bi-chat-left-text"></i></span>
+                            <span>Novo comentário em seus artigos</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center mb-2">
+                            <span class="badge bg-danger"><i class="bi bi-hand-thumbs-up"></i></span>
+                            <span>Quando seus artigos recebem curtidas</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center mb-2">
+                            <span class="badge bg-success"><i class="bi bi-chat-dots"></i></span>
+                            <span>Novos debates em artigos</span>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i></span>
+                            <span>Quando seus artigos são aprovados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    function markAsRead(event, notificationId) {
+        event.preventDefault();
+
+        fetch(`/notifications/${notificationId}/read`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+        })
+        .then(() => {
+            const notif = document.getElementById(`notification-${notificationId}`);
+            notif.classList.remove('bg-white');
+            notif.classList.add('bg-light');
+
+            // Update unread count
+            const count = parseInt(document.getElementById('unread-count').textContent);
+            if (count > 0) {
+                document.getElementById('unread-count').textContent = count - 1;
+            }
+
+            // If there's an action link, follow it
+            if (event.target.closest('.btn-outline-primary')) {
+                window.location.href = event.target.closest('.btn-outline-primary').href;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function deleteNotification(notificationId) {
+        if (confirm('Tem certeza que deseja remover esta notificação?')) {
+            fetch(`/notifications/${notificationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+            })
+            .then(() => {
+                document.getElementById(`notification-${notificationId}`).remove();
+                location.reload();
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
+
+    function markAllAsRead() {
+        fetch('/notifications/mark-all-as-read', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+        })
+        .then(() => location.reload())
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+@endpush
+@endsection
