@@ -118,4 +118,12 @@ class Article extends Model
     {
         $this->increment('views');
     }
+
+    /**
+     * Return full URL for featured image (stored in `image` column).
+     */
+    public function getFeaturedImageAttribute(): ?string
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 }

@@ -37,6 +37,10 @@
                                         <span class="badge bg-success">
                                             <i class="bi bi-chat-dots"></i> Debate
                                         </span>
+                                    @elseif($notification->type === 'new_article')
+                                        <span class="badge bg-primary">
+                                            <i class="bi bi-file-text"></i> Artigo
+                                        </span>
                                     @elseif($notification->type === 'article_approved')
                                         <span class="badge bg-success">
                                             <i class="bi bi-check-circle"></i> Aprovado
@@ -56,7 +60,7 @@
                                 </small>
 
                                 <!-- Action Link -->
-                                @if($notification->article_id)
+                                @if($notification->article_id && $notification->article)
                                     <div class="mt-2">
                                         <a href="{{ route('articles.show', $notification->article->slug) }}"
                                            class="btn btn-sm btn-outline-primary"

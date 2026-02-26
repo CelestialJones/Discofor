@@ -309,5 +309,8 @@
     @endauth
 
     @stack('scripts')
+
+    {{-- Load compiled JS via Vite --}}
+    @vite(['resources/js/app.js'])
 </body>
 </html>

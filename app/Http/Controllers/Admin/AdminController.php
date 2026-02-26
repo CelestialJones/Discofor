@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Comment;
 use App\Models\Debate;
 use App\Models\ActivityLog;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -169,6 +170,16 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'action' => 'article_approved',
             'description' => "Article '{$article->title}' foi aprovado",
+        ]);
+
+        // notify author about approval
+        Notification::create([
+            'user_id' => $article->user_id,
+            'type' => 'article_approved',
+            'title' => 'Seu artigo foi aprovado',
+            'content' => "Seu artigo '{$article->title}' foi aprovado e está publicado.",
+            'article_id' => $article->id,
+            'related_user_id' => auth()->id(),
         ]);
 
         return response()->json(['success' => true, 'message' => 'Artigo aprovado com sucesso!']);

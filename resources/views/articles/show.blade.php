@@ -97,7 +97,7 @@
                 <section id="debates" class="mb-5">
                     <h3 class="mb-4">
                         <i class="bi bi-chat-dots"></i> Debates em Tempo Real
-                        <span class="badge bg-light text-dark">{{ $debates->total() }}</span>
+                        <span class="badge bg-light text-dark" id="debates-count">{{ $debates->total() }}</span>
                     </h3>
 
                     @auth
@@ -130,6 +130,7 @@
                     @endauth
 
                     <!-- Active Debates List -->
+                    <div id="debates-list">
                     @forelse($debates as $debate)
                         <div class="card mb-3 border-0 shadow-sm">
                             <div class="card-body">
@@ -172,6 +173,8 @@
                             <i class="bi bi-inbox"></i> Nenhum debate iniciado ainda. @auth Crie o primeiro! @endauth
                         </div>
                     @endforelse
+
+                    </div>
 
                     <!-- Pagination -->
                     {{ $debates->links('vendor.pagination.bootstrap-5') }}
@@ -405,13 +408,144 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById('comment-content').value = '';
-                    // Reload comments section
-                    location.reload();
+                    // append new comment locally
+                    const list = document.getElementById('comments-list');
+                    const html = `
+                        <div class="card mb-3 border-0 shadow-sm" id="comment-${data.comment.id}">
+                            <div class="card-body">
+                                <div class="d-flex gap-2 mb-2 align-items-start">
+                                    <a href="{{ route('users.show', auth()->user()) }}" class="text-decoration-none">
+                                        ${data.comment.user_avatar ? `<img src="/storage/${data.comment.user_avatar}" class="rounded-circle" width="40" height="40" alt="${data.comment.user_name}">` : `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-person text-muted"></i></div>`}
+                                    </a>
+                                    <div>
+                                        <p class="mb-1 fw-bold small"><a href="{{ route('users.show', auth()->user()) }}" class="text-decoration-none text-dark">${data.comment.user_name}</a></p>
+                                        <p class="mb-0">${data.comment.content}</p>
+                                        <small class="text-muted">agora</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    list.insertAdjacentHTML('afterbegin', html);
+                    // update count badge
+                    const countSpan = document.querySelector('#comments h3 .badge');
+                    if (countSpan) {
+                        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                    }
                 }
             })
             .catch(error => console.error('Error:', error));
         });
     @endauth
+
+    // Real-time updates via Echo on article channel
+    if (window.Echo) {
+        window.Echo.private(`article.{{ $article->id }}`)
+            .listen('.comment.created', (evt) => {
+                // another user added comment
+                const list = document.getElementById('comments-list');
+                const html = `
+                    <div class="card mb-3 border-0 shadow-sm" id="comment-${evt.comment.id}">
+                        <div class="card-body">
+                            <div class="d-flex gap-2 mb-2 align-items-start">
+                                <a href="/users/${evt.comment.user.id}" class="text-decoration-none">
+                                    ${evt.comment.user.avatar ? `<img src="/storage/${evt.comment.user.avatar}" class="rounded-circle" width="40" height="40" alt="${evt.comment.user.name}">` : `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="bi bi-person text-muted"></i></div>`}
+                                </a>
+                                <div>
+                                    <p class="mb-1 fw-bold small"><a href="/users/${evt.comment.user.id}" class="text-decoration-none text-dark">${evt.comment.user.name}</a></p>
+                                    <p class="mb-0">${evt.comment.content}</p>
+                                    <small class="text-muted">agora</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('afterbegin', html);
+                const countSpan = document.querySelector('#comments h3 .badge');
+                if (countSpan) {
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                }
+            })
+            .listen('.article.liked', (evt) => {
+                const count = document.getElementById('likes-count');
+                if (count) {
+                    count.textContent = parseInt(count.textContent) + 1;
+                }
+            })
+            .listen('.debate.created', (evt) => {
+                // update debates badge
+                const badge = document.getElementById('debates-count');
+                if (badge) {
+                    badge.textContent = parseInt(badge.textContent) + 1;
+                }
+
+                // refresh notifications count badge as well
+                if (window.updateNotificationsCount) {
+                    window.updateNotificationsCount();
+                }
+
+                // prepend new debate card to list
+                const list = document.getElementById('debates-list');
+                if (list) {
+                    const d = evt.debate;
+                    const forumVote = ''; // placeholder if needed
+                    const html = `
+                        <div class="card mb-3 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex gap-3 justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="/debates/${d.id}" class="text-decoration-none">
+                                                ${d.title}
+                                            </a>
+                                        </h6>
+                                        <div class="d-flex gap-3">
+                                            <small class="text-muted">
+                                                <i class="bi bi-person"></i> ${d.creator_name || 'Usuário'}
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> agora
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="bi bi-chat"></i> 0 mensagens
+                                            </small>
+                                            <span class="badge bg-success ms-auto">
+                                                Ativo
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-light border-top">
+                                <a href="/debates/${d.id}" class="text-decoration-none">
+                                    Participar do debate <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    list.insertAdjacentHTML('afterbegin', html);
+                }
+            });
+    }
+
+    // Delete comment
+    function deleteComment(commentId) {
+        if (confirm('Tem certeza que deseja deletar este comentário?')) {
+            fetch(`/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`comment-${commentId}`).remove();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    }
 
     // Delete comment
     function deleteComment(commentId) {

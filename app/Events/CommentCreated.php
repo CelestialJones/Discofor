@@ -7,11 +7,11 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CommentCreated implements ShouldBroadcast
+class CommentCreated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -29,5 +29,20 @@ class CommentCreated implements ShouldBroadcast
     public function broadcastAs(): string
     {
         return 'comment.created';
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'comment' => [
+                'id' => $this->comment->id,
+                'content' => $this->comment->content,
+                'user' => [
+                    'id' => $this->comment->user->id,
+                    'name' => $this->comment->user->name,
+                    'avatar' => $this->comment->user->avatar,
+                ],
+            ],
+        ];
     }
 }

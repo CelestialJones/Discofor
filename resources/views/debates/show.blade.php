@@ -246,38 +246,74 @@
                 .catch(error => console.error('Error:', error));
             });
 
-            // Polling for new messages
-            setInterval(() => {
-                fetch(`/debates/{{ $debate->id }}/messages?after=${lastMessageId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.messages && data.messages.length > 0) {
-                            const messagesContainer = document.getElementById('messages-container');
-                            data.messages.forEach(msg => {
-                                const messageHtml = `
-                                    <div class="d-flex gap-2 mb-3 align-items-end">
-                                        <img src="${msg.user.avatar ? '/storage/' + msg.user.avatar : 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><circle cx=%2216%22 cy=%2216%22 r=%2216%22 fill=%22%23e2e8f0%22/></svg>'}"
-                                             class="rounded-circle" width="32" height="32"
-                                             alt="${msg.user.name}">
-                                        <div class="flex-grow-1">
-                                            <div class="bg-white rounded-lg p-3 shadow-sm">
-                                                <p class="mb-1 fw-semibold small">${msg.user.name}</p>
-                                                <p class="mb-0">${msg.message}</p>
-                                                <small class="text-muted d-block mt-1">
-                                                    ${new Date(msg.created_at).toLocaleTimeString()}
-                                                </small>
+            // Function to determine if Echo is really connected
+            function echoConnected() {
+                return window.Echo && window.Echo.connector && window.Echo.connector.pusher &&
+                       window.Echo.connector.pusher.connection &&
+                       window.Echo.connector.pusher.connection.state === 'connected';
+            }
+
+            // Real-time updates via Laravel Echo with connection check
+            if (echoConnected()) {
+                window.Echo.private(`debate.{{ $debate->id }}`)
+                    .listen('.message.sent', (msg) => {
+                        if (msg.id <= lastMessageId) return;
+
+                        const messagesContainer = document.getElementById('messages-container');
+                        const messageHtml = `
+                            <div class="d-flex gap-2 mb-3 align-items-end">
+                                <img src="${msg.user.avatar ? '/storage/' + msg.user.avatar : 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><circle cx=%2216%22 cy=%2216%22 r=%2216%22 fill=%22%23e2e8f0%22/></svg>'}"
+                                     class="rounded-circle" width="32" height="32"
+                                     alt="${msg.user.name}">
+                                <div class="flex-grow-1">
+                                    <div class="bg-white rounded-lg p-3 shadow-sm">
+                                        <p class="mb-1 fw-semibold small">${msg.user.name}</p>
+                                        <p class="mb-0">${msg.message}</p>
+                                        <small class="text-muted d-block mt-1">
+                                            ${new Date(msg.created_at).toLocaleTimeString()}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+                        lastMessageId = msg.id;
+                        scrollToBottom();
+                    });
+            } else {
+                // fallback to polling if Echo isn't connected
+                setInterval(() => {
+                    fetch(`/debates/{{ $debate->id }}/messages?after=${lastMessageId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.messages && data.messages.length > 0) {
+                                const messagesContainer = document.getElementById('messages-container');
+                                data.messages.forEach(msg => {
+                                    const messageHtml = `
+                                        <div class="d-flex gap-2 mb-3 align-items-end">
+                                            <img src="${msg.user.avatar ? '/storage/' + msg.user.avatar : 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><circle cx=%2216%22 cy=%2216%22 r=%2216%22 fill=%22%23e2e8f0%22/></svg>'}"
+                                                 class="rounded-circle" width="32" height="32"
+                                                 alt="${msg.user.name}">
+                                            <div class="flex-grow-1">
+                                                <div class="bg-white rounded-lg p-3 shadow-sm">
+                                                    <p class="mb-1 fw-semibold small">${msg.user.name}</p>
+                                                    <p class="mb-0">${msg.message}</p>
+                                                    <small class="text-muted d-block mt-1">
+                                                        ${new Date(msg.created_at).toLocaleTimeString()}
+                                                    </small>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                `;
-                                messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
-                                lastMessageId = msg.id;
-                            });
-                            scrollToBottom();
-                        }
-                    })
-                    .catch(error => console.error('Polling error:', error));
-            }, 5000); // Poll every 5 seconds
+                                    `;
+                                    messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+                                    lastMessageId = msg.id;
+                                });
+                                scrollToBottom();
+                            }
+                        })
+                        .catch(error => console.error('Polling error:', error));
+                }, 5000); // Poll every 5 seconds
+            }
         @endif
     @endauth
 

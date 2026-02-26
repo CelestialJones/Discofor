@@ -128,7 +128,7 @@
                     @if($article->featured_image)
                         <img src="{{ $article->featured_image }}" class="card-img-top" alt="{{ $article->title }}" style="height: 200px; object-fit: cover;">
                     @else
-                        <div class="bg-gradient-primary" style="height: 120px; background: linear-gradient(145deg, #4f46e5, #7c3aed);"></div>
+                        <div class="bg-gradient-primary" style="height: 200px; background: linear-gradient(145deg, #4f46e5, #7c3aed);"></div>
                     @endif
                     <div class="card-body d-flex flex-column p-4">
                         <div class="d-flex gap-2 mb-3 flex-wrap">
