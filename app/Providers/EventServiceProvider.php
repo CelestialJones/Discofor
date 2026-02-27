@@ -6,6 +6,7 @@ use App\Events\ArticleLiked;
 use App\Events\CommentCreated;
 use App\Listeners\SendCommentNotification;
 use App\Listeners\SendLikeNotification;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -38,6 +39,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Allow tuning password reset retry interval without publishing full auth config.
+        Config::set('auth.passwords.users.throttle', (int) env('PASSWORD_RESET_THROTTLE_SECONDS', 30));
     }
 }
