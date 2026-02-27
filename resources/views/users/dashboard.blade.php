@@ -3,57 +3,59 @@
 @section('title', 'Meu Dashboard - Discofor')
 
 @section('content')
-<div class="container">
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="display-6 mb-2">
-                <i class="bi bi-speedometer2"></i> Meu Dashboard
-            </h1>
-            <p class="text-muted">Bem-vindo de volta, {{ auth()->user()->name }}!</p>
-        </div>
-        <div class="col-auto">
-            <a href="{{ route('articles.create') }}" class="btn btn-primary">
-                <i class="bi bi-pencil-square"></i> Novo Artigo
-            </a>
-            <a href="{{ route('users.edit-profile') }}" class="btn btn-outline-primary">
-                <i class="bi bi-gear"></i> Configurações
-            </a>
+<div class="container py-2">
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="bi bi-speedometer2 me-1"></i> Meu Dashboard
+                </h1>
+                <p class="mb-0 opacity-75">Bem-vindo de volta, {{ auth()->user()->name }}.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('articles.create') }}" class="btn btn-light">
+                    <i class="bi bi-pencil-square me-1"></i> Novo Artigo
+                </a>
+                <a href="{{ route('users.edit-profile') }}" class="btn btn-outline-light">
+                    <i class="bi bi-gear me-1"></i> Configurações
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card hover-lift h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-file-earmark-text" style="font-size: 2rem; color: #6366f1;"></i>
+                    <i class="bi bi-file-earmark-text text-primary" style="font-size: 2rem;"></i>
                     <h3 class="mt-3 mb-0">{{ $stats['total_articles'] }}</h3>
                     <p class="text-muted small mb-0">Artigos Publicados</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card hover-lift h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-hand-thumbs-up" style="font-size: 2rem; color: #8b5cf6;"></i>
+                    <i class="bi bi-hand-thumbs-up text-primary" style="font-size: 2rem;"></i>
                     <h3 class="mt-3 mb-0">{{ $stats['total_likes'] }}</h3>
                     <p class="text-muted small mb-0">Curtidas Recebidas</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card hover-lift h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-chat-dots" style="font-size: 2rem; color: #06b6d4;"></i>
+                    <i class="bi bi-chat-dots text-primary" style="font-size: 2rem;"></i>
                     <h3 class="mt-3 mb-0">{{ $stats['total_comments'] }}</h3>
                     <p class="text-muted small mb-0">Comentários</p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card hover-lift h-100">
                 <div class="card-body text-center">
-                    <i class="bi bi-hourglass-split" style="font-size: 2rem; color: #f59e0b;"></i>
+                    <i class="bi bi-hourglass-split text-primary" style="font-size: 2rem;"></i>
                     <h3 class="mt-3 mb-0">{{ $stats['pending_articles'] }}</h3>
                     <p class="text-muted small mb-0">Artigos Pendentes</p>
                 </div>
@@ -64,7 +66,7 @@
     <div class="row g-4">
         <!-- Recent Articles -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card">
                 <div class="card-header bg-light border-0">
                     <h5 class="mb-0">
                         <i class="bi bi-file-earmark-text"></i> Artigos Recentes
@@ -94,9 +96,9 @@
                                 <a href="{{ route('articles.edit', $article->slug) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form action="{{ route('articles.destroy', $article->slug) }}" method="POST" style="display:inline;">
+                                <form action="{{ route('articles.destroy', $article->slug) }}" method="POST" style="display:inline;" class="delete-article-form">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -118,7 +120,7 @@
 
         <!-- Recent Activity -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card">
                 <div class="card-header bg-light border-0">
                     <h5 class="mb-0">
                         <i class="bi bi-activity"></i> Atividade Recente
@@ -142,4 +144,20 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    document.querySelectorAll('.delete-article-form').forEach((form) => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const confirmed = await window.DiscoforUI.confirmAction({
+                title: 'Excluir artigo',
+                message: 'Tem certeza que deseja excluir este artigo?',
+                confirmText: 'Excluir',
+                confirmClass: 'btn-danger',
+            });
+            if (confirmed) form.submit();
+        });
+    });
+</script>
+@endpush
 @endsection

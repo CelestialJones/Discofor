@@ -3,7 +3,7 @@
 @section('title', 'Editar Perfil - Discofor')
 
 @section('content')
-<div class="container">
+<div class="container py-2">
     <div class="row justify-content-center py-4">
         <div class="col-lg-8">
             @if (session('status') === 'password-updated')
@@ -13,11 +13,14 @@
                 </div>
             @endif
 
-            <h1 class="display-6 mb-4">
-                <i class="bi bi-gear"></i> Editar Perfil
-            </h1>
+            <div class="page-header mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="bi bi-gear me-1"></i> Editar Perfil
+                </h1>
+                <p class="mb-0 opacity-75">Atualize seus dados públicos e preferências de acesso.</p>
+            </div>
 
-            <div class="card border-0 shadow-lg">
+            <div class="surface-card">
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('users.update-profile') }}" enctype="multipart/form-data">
                         @csrf
@@ -90,7 +93,7 @@
             </div>
 
             <!-- Change Password Section -->
-            <div class="card border-0 shadow-lg mt-4">
+            <div class="surface-card mt-4">
                 <div class="card-header bg-light border-0">
                     <h5 class="mb-0">
                         <i class="bi bi-key"></i> Alterar Senha

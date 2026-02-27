@@ -3,7 +3,7 @@
 @section('title', $debate->title . ' - Debate')
 
 @section('content')
-<div class="container py-4">
+<div class="container py-3">
     <div class="row">
         <!-- Debate Info -->
         <div class="col-lg-8">
@@ -21,58 +21,56 @@
             </nav>
 
             <!-- Debate Header -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex gap-3 align-items-start justify-content-between">
-                        <div>
-                            <h2 class="mb-2">{{ $debate->title }}</h2>
-                            @if($debate->description)
-                                <p class="text-muted mb-0">{{ $debate->description }}</p>
-                            @endif
-                        </div>
-                        <span class="badge bg-{{ $debate->isActive() ? 'success' : 'secondary' }}">
-                            {{ $debate->isActive() ? 'Ativo' : 'Encerrado' }}
-                        </span>
-                    </div>
-
-                    <hr class="my-3">
-
-                    <div class="d-flex gap-2 align-items-center">
-                        <img src="{{ $debate->creator->avatar ? asset('storage/' . $debate->creator->avatar) : '' }}"
-                             class="rounded-circle" width="40" height="40"
-                             alt="{{ $debate->creator->name }}">
-                        <div>
-                            <p class="mb-0">
-                                <strong>{{ $debate->creator->name }}</strong>
-                            </p>
-                            <small class="text-muted">
-                                {{ $debate->created_at->format('d/m/Y H:i') }}
-                            </small>
-                        </div>
-                        @if(auth()->id() === $debate->created_by || auth()->user()?->isAdmin())
-                            <div class="ms-auto btn-group btn-group-sm">
-                                @if($debate->isActive())
-                                    <form action="{{ route('debates.close', $debate) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-outline-warning">
-                                            <i class="bi bi-lock"></i> Encerrar
-                                        </button>
-                                    </form>
-                                @endif
-                                <form action="{{ route('debates.destroy', $debate) }}" method="POST" style="display:inline;">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Tem certeza?')">
-                                        <i class="bi bi-trash"></i> Deletar
-                                    </button>
-                                </form>
-                            </div>
+            <div class="page-header mb-4">
+                <div class="d-flex gap-3 align-items-start justify-content-between">
+                    <div>
+                        <h2 class="mb-2">{{ $debate->title }}</h2>
+                        @if($debate->description)
+                            <p class="mb-0 opacity-75">{{ $debate->description }}</p>
                         @endif
                     </div>
+                    <span class="badge bg-{{ $debate->isActive() ? 'success' : 'secondary' }}">
+                        {{ $debate->isActive() ? 'Ativo' : 'Encerrado' }}
+                    </span>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="d-flex gap-2 align-items-center">
+                    <img src="{{ $debate->creator->avatar ? asset('storage/' . $debate->creator->avatar) : '' }}"
+                         class="rounded-circle" width="40" height="40"
+                         alt="{{ $debate->creator->name }}">
+                    <div>
+                        <p class="mb-0">
+                            <strong>{{ $debate->creator->name }}</strong>
+                        </p>
+                        <small class="opacity-75">
+                            {{ $debate->created_at->format('d/m/Y H:i') }}
+                        </small>
+                    </div>
+                    @if(auth()->id() === $debate->created_by || auth()->user()?->isAdmin())
+                        <div class="ms-auto btn-group btn-group-sm">
+                            @if($debate->isActive())
+                                <form action="{{ route('debates.close', $debate) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-warning">
+                                        <i class="bi bi-lock"></i> Encerrar
+                                    </button>
+                                </form>
+                            @endif
+                            <form action="{{ route('debates.destroy', $debate) }}" method="POST" style="display:inline;">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger" id="delete-debate-btn">
+                                    <i class="bi bi-trash"></i> Deletar
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             </div>
 
             <!-- Chat Area -->
-            <div class="card border-0 shadow-sm" style="height: 500px; display: flex; flex-direction: column;">
+            <div class="surface-card" style="height: 500px; display: flex; flex-direction: column;">
                 <!-- Messages List -->
                 <div class="card-body" id="messages-container" style="flex: 1; overflow-y: auto; background-color: #f8f9fa;">
                     @forelse($messages as $message)
@@ -141,7 +139,7 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Article Card -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="surface-card mb-4">
                 <div class="card-header bg-light border-0">
                     <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> Artigo Original</h6>
                 </div>
@@ -163,7 +161,7 @@
             </div>
 
             <!-- Participants Card -->
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card">
                 <div class="card-header bg-light border-0">
                     <h6 class="mb-0">
                         <i class="bi bi-people"></i> Participantes
@@ -220,6 +218,7 @@
                 .then(data => {
                     if (data.success) {
                         document.getElementById('message-input').value = '';
+                        window.DiscoforUI?.playCommentSound();
                         // Append new message
                         const messagesContainer = document.getElementById('messages-container');
                         const messageHtml = `
@@ -318,23 +317,41 @@
     @endauth
 
     // Delete message
-    function deleteMessage(messageId) {
-        if (confirm('Tem certeza que deseja deletar esta mensagem?')) {
-            fetch(`/messages/${messageId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
+    async function deleteMessage(messageId) {
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Excluir mensagem',
+            message: 'Tem certeza que deseja deletar esta mensagem?',
+            confirmText: 'Excluir',
+            confirmClass: 'btn-danger',
+        });
+        if (!confirmed) return;
+
+        fetch(`/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.DiscoforUI.showToast('Mensagem removida.', 'success');
+                setTimeout(() => location.reload(), 400);
+            }
+        })
+        .catch(() => window.DiscoforUI.showToast('Erro ao remover mensagem.', 'error'));
     }
+
+    document.getElementById('delete-debate-btn')?.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Excluir debate',
+            message: 'Tem certeza que deseja excluir este debate?',
+            confirmText: 'Excluir',
+            confirmClass: 'btn-danger',
+        });
+        if (confirmed) event.target.closest('form').submit();
+    });
 </script>
 @endpush
 @endsection

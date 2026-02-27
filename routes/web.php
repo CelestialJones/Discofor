@@ -77,6 +77,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Comments Moderation
     Route::get('/comments', [\App\Http\Controllers\Admin\AdminController::class, 'moderateComments'])->name('comments');
+    Route::post('/comments/bulk', [\App\Http\Controllers\Admin\AdminController::class, 'moderateCommentsBulk'])->name('comments.bulk');
     Route::post('/comments/{comment}/approve', [\App\Http\Controllers\Admin\AdminController::class, 'approveComment'])->name('comments.approve');
     Route::post('/comments/{comment}/reject', [\App\Http\Controllers\Admin\AdminController::class, 'rejectComment'])->name('comments.reject');
     

@@ -1,23 +1,25 @@
 @extends('layouts.app')
 
+@section('title', 'Admin - Usuários')
+
 @section('content')
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <!-- Header -->
     <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="h3">
-                <i class="bi bi-people"></i> Gerenciar Usuários
-            </h1>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar
-            </a>
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-people me-1"></i> Gerenciar Usuários
+                </h1>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-1"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="card border-0 shadow-sm mb-4">
+    <div class="surface-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
@@ -32,7 +34,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-primary w-100 h-100">
                         <i class="bi bi-search"></i> Filtrar
                     </button>
                 </div>
@@ -46,7 +48,7 @@
     </div>
 
     <!-- Users Table -->
-    <div class="card border-0 shadow-sm">
+    <div class="surface-card">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light">
@@ -74,7 +76,7 @@
                             <td>
                                 @if($user->is_banned)
                                     <span class="badge bg-danger">Banido</span>
-                                else
+                                @else
                                     <span class="badge bg-success">Ativo</span>
                                 @endif
                             </td>
@@ -148,48 +150,90 @@
 </div>
 
 <script>
-document.querySelectorAll('.ban-user').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        if(!confirm('Tem certeza que quer banir este usuário?')) return;
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const roleForm = document.getElementById('roleForm');
 
-        try {
-            const response = await fetch(`/admin/users/${this.dataset.userId}/ban`, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': document.querySelector('[name="_token"]').value }
-            });
-            const data = await response.json();
-            if(data.success) {
-                location.reload();
-            }
-        } catch(e) {
-            alert('Erro ao banir usuário');
-        }
+function setButtonLoading(button, loading) {
+    if (!button) return;
+    if (loading) {
+        button.dataset.originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processando...';
+    } else {
+        button.disabled = false;
+        button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+    }
+}
+
+async function postAction(url, button, successMessage, errorMessage) {
+    setButtonLoading(button, true);
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || errorMessage);
+        window.DiscoforUI.showToast(data.message || successMessage, 'success');
+        setTimeout(() => location.reload(), 500);
+    } catch (error) {
+        window.DiscoforUI.showToast(error.message || errorMessage, 'error');
+        setButtonLoading(button, false);
+    }
+}
+
+document.querySelectorAll('.ban-user').forEach(btn => {
+    btn.addEventListener('click', async function () {
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Banir usuário',
+            message: 'Tem certeza que deseja banir este usuário?',
+            confirmText: 'Banir',
+            confirmClass: 'btn-danger',
+        });
+        if (!confirmed) return;
+        postAction(`/admin/users/${this.dataset.userId}/ban`, this, 'Usuário banido com sucesso!', 'Erro ao banir usuário');
     });
 });
 
 document.querySelectorAll('.unban-user').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        try {
-            const response = await fetch(`/admin/users/${this.dataset.userId}/unban`, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': document.querySelector('[name="_token"]').value }
-            });
-            const data = await response.json();
-            if(data.success) {
-                location.reload();
-            }
-        } catch(e) {
-            alert('Erro ao desbanir usuário');
-        }
+    btn.addEventListener('click', async function () {
+        postAction(`/admin/users/${this.dataset.userId}/unban`, this, 'Usuário desbanido com sucesso!', 'Erro ao desbanir usuário');
     });
 });
 
 const roleModal = document.getElementById('roleModal');
-roleModal.addEventListener('show.bs.modal', function(e) {
+roleModal.addEventListener('show.bs.modal', function (e) {
     const userId = e.relatedTarget.dataset.userId;
     const userRole = e.relatedTarget.dataset.userRole;
     document.getElementById('role').value = userRole;
     document.getElementById('roleForm').action = `/admin/users/${userId}/role`;
+});
+
+roleForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const submitButton = roleForm.querySelector('button[type="submit"]');
+    setButtonLoading(submitButton, true);
+
+    try {
+        const response = await fetch(roleForm.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+            body: new FormData(roleForm),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Erro ao atualizar função');
+
+        const modal = bootstrap.Modal.getOrCreateInstance(roleModal);
+        modal.hide();
+        window.DiscoforUI.showToast(data.message || 'Função atualizada!', 'success');
+        setTimeout(() => location.reload(), 500);
+    } catch (error) {
+        window.DiscoforUI.showToast(error.message || 'Erro ao atualizar função', 'error');
+        setButtonLoading(submitButton, false);
+    }
 });
 </script>
 @endsection

@@ -4,17 +4,36 @@
 @section('description', 'Explore os melhores artigos acadêmicos da plataforma Discofor')
 
 @section('content')
-<div class="container">
+@php
+    $likedArticleIds = [];
+    if (auth()->check() && isset($articles)) {
+        $likedArticleIds = auth()->user()
+            ->likes()
+            ->whereIn('article_id', $articles->pluck('id'))
+            ->pluck('article_id')
+            ->toArray();
+    }
+@endphp
+<div class="container py-2">
     <div class="row mb-5">
         <div class="col-md-9">
-            <div class="mb-4">
-                <h1 class="display-5 mb-2">Artigos</h1>
-                <p class="text-muted">Descubra artigos acadêmicos de qualidade da nossa comunidade</p>
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <h1 class="display-6 fw-bold mb-2">Artigos</h1>
+                        <p class="mb-0 opacity-75">Descubra conteúdos acadêmicos relevantes da comunidade.</p>
+                    </div>
+                    @auth
+                        <a href="{{ route('articles.create') }}" class="btn btn-light">
+                            <i class="bi bi-pencil-square me-1"></i> Publicar artigo
+                        </a>
+                    @endauth
+                </div>
             </div>
 
             <!-- Search and Filters -->
-            <div class="card mb-4">
-                <div class="card-body">
+            <div class="surface-card mb-4">
+                <div class="card-body p-4">
                     <form method="GET" class="row g-2">
                         <div class="col-md-6">
                             <input type="text" name="search" class="form-control" placeholder="Buscar artigos..."
@@ -29,7 +48,7 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">
+                            <button type="submit" class="btn btn-primary w-100 h-100">
                                 <i class="bi bi-search"></i> Buscar
                             </button>
                         </div>
@@ -41,18 +60,18 @@
             <div class="row g-4">
                 @forelse($articles as $article)
                     <div class="col-md-6">
-                        <div class="card article-card h-100">
+                        <div class="card article-card h-100 hover-lift border-0">
                             @if($article->image)
                                 <img src="{{ asset('storage/' . $article->image) }}" class="card-img-top"
                                      alt="{{ $article->title }}" style="height: 200px; object-fit: cover;">
                             @else
-                                <div class="bg-light p-5 text-center"
+                                <div class="bg-light p-5 text-center border-bottom"
                                      style="height: 200px; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-file-text" style="font-size: 3rem; color: #cbd5e1;"></i>
+                                    <i class="bi bi-file-text" style="font-size: 3rem; color: #91a6c6;"></i>
                                 </div>
                             @endif
-                            <div class="card-body">
-                                <h5 class="card-title">
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold">
                                     <a href="{{ route('articles.show', $article->slug) }}"
                                        class="text-decoration-none text-dark">
                                         {{ $article->title }}
@@ -70,7 +89,7 @@
                                     @endforeach
                                 </div>
                             </div>
-                            <div class="card-footer bg-white border-top">
+                            <div class="card-footer bg-white border-top px-4 py-3">
                                 <small class="text-muted">
                                     <i class="bi bi-person"></i>
                                     <a href="#" class="text-decoration-none">{{ $article->user->name }}</a>
@@ -83,18 +102,29 @@
                                         <i class="bi bi-eye"></i> {{ $article->views }}
                                     </span>
                                     <span class="badge bg-light text-dark">
-                                        <i class="bi bi-hand-thumbs-up"></i> {{ $article->likes_count ?? $article->likes()->count() }}
+                                        <i class="bi bi-hand-thumbs-up"></i> <span class="article-likes-count">{{ $article->likes_count ?? $article->likes()->count() }}</span>
                                     </span>
                                     <span class="badge bg-light text-dark">
                                         <i class="bi bi-chat"></i> {{ $article->comments_count ?? $article->comments()->count() }}
                                     </span>
+                                    @auth
+                                        <button type="button"
+                                                class="btn btn-sm {{ in_array($article->id, $likedArticleIds) ? 'btn-primary' : 'btn-outline-primary' }} ms-auto article-like-btn"
+                                                data-url="{{ route('likes.toggle', $article) }}">
+                                            <i class="bi bi-hand-thumbs-up"></i>
+                                        </button>
+                                    @else
+                                        <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary ms-auto">
+                                            <i class="bi bi-hand-thumbs-up"></i>
+                                        </a>
+                                    @endauth
                                 </div>
                             </div>
                         </div>
                     </div>
                 @empty
                     <div class="col-12">
-                        <div class="alert alert-info">
+                        <div class="alert alert-info border-0 shadow-sm">
                             <i class="bi bi-info-circle"></i> Nenhum artigo encontrado.
                         </div>
                     </div>
@@ -109,8 +139,8 @@
 
         <!-- Sidebar -->
         <div class="col-md-3">
-            <div class="card mb-4">
-                <div class="card-header bg-light">
+            <div class="surface-card mb-4">
+                <div class="card-header bg-light border-0">
                     <h6 class="mb-0">
                         <i class="bi bi-tags"></i> Tags Populares
                     </h6>
@@ -129,7 +159,7 @@
             </div>
 
             @auth
-                <div class="card">
+                <div class="surface-card">
                     <div class="card-body">
                         <a href="{{ route('articles.create') }}" class="btn btn-primary w-100">
                             <i class="bi bi-pencil-square"></i> Criar Artigo
@@ -137,7 +167,7 @@
                     </div>
                 </div>
             @else
-                <div class="card">
+                <div class="surface-card">
                     <div class="card-body text-center">
                         <p class="mb-3">
                             <i class="bi bi-lock"></i> Faça login para criar artigos
@@ -150,4 +180,38 @@
         </div>
     </div>
 </div>
+@auth
+@push('scripts')
+<script>
+    document.querySelectorAll('.article-like-btn').forEach((btn) => {
+        btn.addEventListener('click', async function () {
+            try {
+                const response = await fetch(this.dataset.url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error('Erro ao curtir artigo');
+
+                this.classList.remove('like-animate');
+                void this.offsetWidth;
+                this.classList.add('like-animate');
+                if (data.liked) {
+                    window.DiscoforUI?.playLikeSound();
+                }
+                this.classList.toggle('btn-primary', data.liked);
+                this.classList.toggle('btn-outline-primary', !data.liked);
+                const count = this.parentElement.querySelector('.article-likes-count');
+                if (count) count.textContent = data.likes_count;
+            } catch (_) {
+                window.DiscoforUI?.showToast('Não foi possível atualizar a curtida.', 'error');
+            }
+        });
+    });
+</script>
+@endpush
+@endauth
 @endsection

@@ -65,7 +65,7 @@
 
                 <!-- Article Footer -->
                 <div class="d-flex gap-2 align-items-center mb-5 pb-3 border-bottom">
-                    <button class="btn btn-outline-primary" id="like-btn" onclick="toggleLike()">
+                    <button class="btn {{ $isLiked ? 'btn-primary' : 'btn-outline-primary' }}" id="like-btn" onclick="toggleLike()">
                         <i class="bi bi-hand-thumbs-up"></i> <span id="likes-count">{{ $article->likes()->count() }}</span>
                     </button>
 
@@ -81,10 +81,9 @@
                                     <i class="bi bi-pencil"></i> Editar
                                 </a>
                                 <form action="{{ route('articles.destroy', $article->slug) }}" method="POST"
-                                      style="display:inline;">
+                                      style="display:inline;" id="delete-article-form">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Tem certeza?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-trash"></i> Deletar
                                     </button>
                                 </form>
@@ -102,7 +101,7 @@
 
                     @auth
                         <!-- Create Debate Form -->
-                        <div class="card mb-4 border-0 shadow-sm">
+                        <div class="surface-card mb-4">
                             <div class="card-body">
                                 <form method="POST" action="{{ route('debates.store', $article) }}">
                                     @csrf
@@ -123,7 +122,7 @@
                             </div>
                         </div>
                     @else
-                        <div class="alert alert-info mb-4">
+                        <div class="empty-state mb-4">
                             <i class="bi bi-info-circle"></i>
                             <a href="{{ route('login') }}" class="alert-link">Faça login</a> para iniciar um debate.
                         </div>
@@ -132,7 +131,7 @@
                     <!-- Active Debates List -->
                     <div id="debates-list">
                     @forelse($debates as $debate)
-                        <div class="card mb-3 border-0 shadow-sm">
+                        <div class="surface-card mb-3">
                             <div class="card-body">
                                 <div class="d-flex gap-3 justify-content-between align-items-start">
                                     <div class="flex-grow-1">
@@ -169,7 +168,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="alert alert-info">
+                        <div class="empty-state">
                             <i class="bi bi-inbox"></i> Nenhum debate iniciado ainda. @auth Crie o primeiro! @endauth
                         </div>
                     @endforelse
@@ -189,7 +188,7 @@
 
                     @auth
                         <!-- Add Comment Form -->
-                        <div class="card mb-4 border-0 shadow-sm">
+                        <div class="surface-card mb-4">
                             <div class="card-body">
                                 <form id="comment-form">
                                     @csrf
@@ -207,7 +206,7 @@
                             </div>
                         </div>
                     @else
-                        <div class="alert alert-info mb-4">
+                        <div class="empty-state mb-4">
                             <i class="bi bi-info-circle"></i>
                             <a href="{{ route('login') }}" class="alert-link">Faça login</a> para comentar neste artigo.
                         </div>
@@ -216,7 +215,7 @@
                     <!-- Comments List -->
                     <div id="comments-list">
                         @forelse($comments as $comment)
-                            <div class="card mb-3 border-0 shadow-sm" id="comment-{{ $comment->id }}">
+                            <div class="surface-card mb-3" id="comment-{{ $comment->id }}">
                                 <div class="card-body">
                                     <div class="d-flex gap-2 mb-2 align-items-start">
                                         <a href="{{ route('users.show', $comment->user) }}" class="text-decoration-none">
@@ -257,7 +256,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="alert alert-info">
+                            <div class="empty-state">
                                 <i class="bi bi-inbox"></i> Nenhum comentário ainda. Seja o primeiro a comentar!
                             </div>
                         @endforelse
@@ -272,7 +271,7 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Article Info Card -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="surface-card mb-4">
                 <div class="card-header bg-light border-0">
                     <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informações</h6>
                 </div>
@@ -297,7 +296,7 @@
             </div>
 
             <!-- Author Card -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="surface-card mb-4">
                 <div class="card-header bg-light border-0">
                     <h6 class="mb-0"><i class="bi bi-person"></i> Autor</h6>
                 </div>
@@ -339,7 +338,7 @@
             @endphp
 
             @if($similarArticles->isNotEmpty())
-                <div class="card border-0 shadow-sm">
+                <div class="surface-card">
                     <div class="card-header bg-light border-0">
                         <h6 class="mb-0"><i class="bi bi-bookmark"></i> Artigos Relacionados</h6>
                     </div>
@@ -375,6 +374,12 @@
             .then(data => {
                 const btn = document.getElementById('like-btn');
                 const count = document.getElementById('likes-count');
+                btn.classList.remove('like-animate');
+                void btn.offsetWidth;
+                btn.classList.add('like-animate');
+                if (data.liked) {
+                    window.DiscoforUI?.playLikeSound();
+                }
                 count.textContent = data.likes_count;
                 if (data.liked) {
                     btn.classList.remove('btn-outline-primary');
@@ -408,10 +413,11 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById('comment-content').value = '';
+                    window.DiscoforUI?.playCommentSound();
                     // append new comment locally
                     const list = document.getElementById('comments-list');
                     const html = `
-                        <div class="card mb-3 border-0 shadow-sm" id="comment-${data.comment.id}">
+                        <div class="surface-card mb-3" id="comment-${data.comment.id}">
                             <div class="card-body">
                                 <div class="d-flex gap-2 mb-2 align-items-start">
                                     <a href="{{ route('users.show', auth()->user()) }}" class="text-decoration-none">
@@ -445,7 +451,7 @@
                 // another user added comment
                 const list = document.getElementById('comments-list');
                 const html = `
-                    <div class="card mb-3 border-0 shadow-sm" id="comment-${evt.comment.id}">
+                    <div class="surface-card mb-3" id="comment-${evt.comment.id}">
                         <div class="card-body">
                             <div class="d-flex gap-2 mb-2 align-items-start">
                                 <a href="/users/${evt.comment.user.id}" class="text-decoration-none">
@@ -490,7 +496,7 @@
                     const d = evt.debate;
                     const forumVote = ''; // placeholder if needed
                     const html = `
-                        <div class="card mb-3 border-0 shadow-sm">
+                        <div class="surface-card mb-3">
                             <div class="card-body">
                                 <div class="d-flex gap-3 justify-content-between align-items-start">
                                     <div class="flex-grow-1">
@@ -528,42 +534,40 @@
             });
     }
 
-    // Delete comment
-    function deleteComment(commentId) {
-        if (confirm('Tem certeza que deseja deletar este comentário?')) {
-            fetch(`/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById(`comment-${commentId}`).remove();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    }
+    document.getElementById('delete-article-form')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Excluir artigo',
+            message: 'Tem certeza que deseja excluir este artigo?',
+            confirmText: 'Excluir',
+            confirmClass: 'btn-danger',
+        });
+        if (confirmed) event.target.submit();
+    });
 
-    // Delete comment
-    function deleteComment(commentId) {
-        if (confirm('Tem certeza que deseja deletar este comentário?')) {
-            fetch(`/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById(`comment-${commentId}`).remove();
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
+    async function deleteComment(commentId) {
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Excluir comentário',
+            message: 'Tem certeza que deseja deletar este comentário?',
+            confirmText: 'Excluir',
+            confirmClass: 'btn-danger',
+        });
+        if (!confirmed) return;
+
+        fetch(`/comments/${commentId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`comment-${commentId}`)?.remove();
+                window.DiscoforUI.showToast('Comentário removido.', 'success');
+            }
+        })
+        .catch(() => window.DiscoforUI.showToast('Erro ao remover comentário.', 'error'));
     }
 </script>
 @endpush

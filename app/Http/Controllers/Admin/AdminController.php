@@ -254,6 +254,52 @@ class AdminController extends Controller
     }
 
     /**
+     * Approve or reject comments in bulk.
+     */
+    public function moderateCommentsBulk(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:approve,reject',
+            'comment_ids' => 'required|array|min:1',
+            'comment_ids.*' => 'integer|exists:comments,id',
+        ]);
+
+        $pendingComments = Comment::whereIn('id', $validated['comment_ids'])
+            ->where('approved', false);
+
+        if ($validated['action'] === 'approve') {
+            $affected = $pendingComments->update(['approved' => true]);
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'comments_bulk_approved',
+                'description' => "{$affected} comentários foram aprovados em lote",
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'affected' => $affected,
+                'message' => "{$affected} comentário(s) aprovado(s).",
+            ]);
+        }
+
+        $affected = $pendingComments->count();
+        $pendingComments->delete();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'comments_bulk_rejected',
+            'description' => "{$affected} comentários foram rejeitados em lote",
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'affected' => $affected,
+            'message' => "{$affected} comentário(s) rejeitado(s).",
+        ]);
+    }
+
+    /**
      * Show activity logs.
      */
     public function activityLogs(Request $request)

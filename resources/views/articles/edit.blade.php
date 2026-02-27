@@ -3,14 +3,17 @@
 @section('title', 'Editar Artigo - Discofor')
 
 @section('content')
-<div class="container">
+<div class="container py-2">
     <div class="row justify-content-center py-4">
         <div class="col-lg-9">
-            <h1 class="display-6 mb-4">
-                <i class="bi bi-pencil-square"></i> Editar Artigo
-            </h1>
+            <div class="page-header mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="bi bi-pencil-square me-1"></i> Editar Artigo
+                </h1>
+                <p class="mb-0 opacity-75">Atualize conteúdo, imagem e tags antes de reenviar para revisão.</p>
+            </div>
 
-            <div class="card border-0 shadow-lg">
+            <div class="surface-card">
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('articles.update', $article->slug) }}" enctype="multipart/form-data">
                         @csrf
@@ -95,11 +98,11 @@
 
                         <!-- Buttons -->
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle"></i> Salvar Alterações
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Salvar Alterações
                             </button>
-                            <a href="{{ route('articles.show', $article->slug) }}" class="btn btn-outline-secondary btn-lg">
-                                <i class="bi bi-x-circle"></i> Cancelar
+                            <a href="{{ route('articles.show', $article->slug) }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
                             </a>
                         </div>
                     </form>

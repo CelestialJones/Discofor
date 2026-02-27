@@ -4,73 +4,65 @@
 @section('description', 'Acesse sua conta na plataforma Discofor')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center py-5">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-lg">
-                <div class="card-body p-5">
-                    <h2 class="card-title text-center mb-4">
-                        <i class="bi bi-box-arrow-in-right" style="color: #6366f1;"></i> Entrar
-                    </h2>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-5">
+                    <div class="page-header h-100 d-flex flex-column justify-content-center">
+                        <span class="badge bg-light text-primary mb-3 align-self-start">Acesso seguro</span>
+                        <h1 class="h2 fw-bold mb-3">Entre na sua conta</h1>
+                        <p class="mb-0 opacity-75">Acompanhe artigos, debates e notificações da comunidade acadêmica em um único lugar.</p>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="surface-card p-4 p-md-5">
+                        @if ($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Erro!</strong>
+                                @foreach ($errors->all() as $error)
+                                    <div>{{ $error }}</div>
+                                @endforeach
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
 
-                    <!-- Session Status -->
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <strong>Erro!</strong>
-                            @foreach ($errors->all() as $error)
-                                <div>{{ $error }}</div>
-                            @endforeach
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                        <form method="POST" action="{{ route('login') }}">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                       id="email" name="email" value="{{ old('email') }}" required autofocus>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Senha</label>
+                                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                       id="password" name="password" required>
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                   id="email" name="email" value="{{ old('email') }}" required autofocus>
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember_me" name="remember">
+                                <label class="form-check-label" for="remember_me">Manter-me conectado</label>
+                            </div>
 
-                        <!-- Password -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Senha</label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                   id="password" name="password" required>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+                            </button>
+                        </form>
 
-                        <!-- Remember Me -->
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember_me" name="remember">
-                            <label class="form-check-label" for="remember_me">
-                                Manter-me conectado
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
-                            <i class="bi bi-check-circle"></i> Entrar
-                        </button>
-                    </form>
-
-                    <hr>
-
-                    <div class="row text-center">
-                        <div class="col-6 mb-2">
-                            <a href="{{ route('password.request') }}" class="text-decoration-none small">
-                                <i class="bi bi-key"></i> Esqueceu a senha?
+                        <div class="d-flex justify-content-between flex-wrap gap-2 small">
+                            <a href="{{ route('password.request') }}" class="text-decoration-none">
+                                <i class="bi bi-key me-1"></i> Esqueceu a senha?
                             </a>
-                        </div>
-                        <div class="col-6 mb-2">
-                            <a href="{{ route('register') }}" class="text-decoration-none small">
-                                <i class="bi bi-pencil-square"></i> Criar conta
+                            <a href="{{ route('register') }}" class="text-decoration-none">
+                                <i class="bi bi-pencil-square me-1"></i> Criar conta
                             </a>
                         </div>
                     </div>

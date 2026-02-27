@@ -2,23 +2,67 @@
 
 @section('title', 'Notificações - Discofor')
 
+@push('styles')
+<style>
+    .notification-card {
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .notification-card.unread {
+        border-left: 4px solid var(--primary-color);
+        box-shadow: 0 16px 30px rgba(11, 18, 32, 0.1);
+    }
+
+    .notification-card.read {
+        opacity: 0.92;
+    }
+
+    .notification-card .notification-title {
+        color: inherit;
+    }
+
+    html[data-theme="dark"] .notification-card.unread {
+        background: rgba(24, 38, 58, 0.95) !important;
+        border-left-color: #60a5fa;
+    }
+
+    html[data-theme="dark"] .notification-card.read {
+        background: rgba(18, 30, 48, 0.85) !important;
+        border-left: 4px solid #2f425f;
+    }
+
+    html[data-theme="dark"] .notification-card .text-muted {
+        color: #9fb4d1 !important;
+    }
+
+    html[data-theme="dark"] .notification-card .btn-outline-secondary {
+        border-color: #3f587a;
+        color: #c9dbf3;
+    }
+
+    html[data-theme="dark"] .notification-card .btn-outline-secondary:hover {
+        background: #2a3f5e;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="container py-4">
+<div class="container py-3">
     <div class="row">
         <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="display-6 mb-0">
-                    <i class="bi bi-bell"></i> Notificações
+            <div class="page-header d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <h1 class="display-6 mb-0 fw-bold">
+                    <i class="bi bi-bell me-1"></i> Notificações
                 </h1>
                 @if(auth()->user()->unreadNotificationsCount() > 0)
-                    <button class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()">
-                        <i class="bi bi-check-all"></i> Marcar todas como lidas
+                    <button class="btn btn-light" onclick="markAllAsRead()">
+                        <i class="bi bi-check-all me-1"></i> Marcar todas como lidas
                     </button>
                 @endif
             </div>
 
             @forelse($notifications as $notification)
-                <div class="card mb-3 border-0 shadow-sm {{ $notification->is_read ? 'bg-light' : 'bg-white' }}"
+                <div class="surface-card notification-card mb-3 {{ $notification->is_read ? 'read' : 'unread' }}"
                      id="notification-{{ $notification->id }}">
                     <div class="card-body">
                         <div class="d-flex gap-3 justify-content-between align-items-start">
@@ -52,7 +96,7 @@
                                     @endif
                                 </div>
 
-                                <h6 class="mb-1">{{ $notification->title }}</h6>
+                                <h6 class="mb-1 notification-title">{{ $notification->title }}</h6>
                                 <p class="mb-2 text-muted">{{ $notification->content }}</p>
 
                                 <small class="text-muted">
@@ -86,7 +130,7 @@
                     </div>
                 </div>
             @empty
-                <div class="alert alert-info text-center py-5">
+                <div class="empty-state">
                     <i class="bi bi-inbox" style="font-size: 2rem; opacity: 0.3;"></i>
                     <p class="mt-3 mb-0">Você está em dia com todas as notificações!</p>
                 </div>
@@ -99,7 +143,7 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Stats Card -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="surface-card mb-4">
                 <div class="card-body">
                     <h6 class="mb-3">Resumo</h6>
                     <div class="mb-2">
@@ -111,8 +155,7 @@
                         <h4>{{ auth()->user()->notifications()->count() }}</h4>
                     </div>
                     @if(auth()->user()->notifications()->count() > 0)
-                        <form action="{{ route('notifications.clear-all') }}" method="POST"
-                              onsubmit="return confirm('Tem certeza que deseja limpar todas as notificações?')">
+                        <form action="{{ route('notifications.clear-all') }}" method="POST" id="clear-all-form">
                             @csrf
                             <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                                 <i class="bi bi-trash"></i> Limpar Todas
@@ -123,7 +166,7 @@
             </div>
 
             <!-- Notification Types Card -->
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card">
                 <div class="card-body">
                     <h6 class="mb-3">Tipos de Notificação</h6>
                     <div class="small">
@@ -152,6 +195,17 @@
 
 @push('scripts')
 <script>
+    document.getElementById('clear-all-form')?.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Limpar notificações',
+            message: 'Tem certeza que deseja limpar todas as notificações?',
+            confirmText: 'Limpar tudo',
+            confirmClass: 'btn-danger',
+        });
+        if (confirmed) this.submit();
+    });
+
     function markAsRead(event, notificationId) {
         event.preventDefault();
 
@@ -163,8 +217,8 @@
         })
         .then(() => {
             const notif = document.getElementById(`notification-${notificationId}`);
-            notif.classList.remove('bg-white');
-            notif.classList.add('bg-light');
+            notif.classList.remove('unread');
+            notif.classList.add('read');
 
             // Update unread count
             const count = parseInt(document.getElementById('unread-count').textContent);
@@ -172,28 +226,37 @@
                 document.getElementById('unread-count').textContent = count - 1;
             }
 
+            window.DiscoforUI.showToast('Notificação marcada como lida.', 'success');
+
             // If there's an action link, follow it
             if (event.target.closest('.btn-outline-primary')) {
                 window.location.href = event.target.closest('.btn-outline-primary').href;
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(() => window.DiscoforUI.showToast('Erro ao marcar notificação.', 'error'));
     }
 
-    function deleteNotification(notificationId) {
-        if (confirm('Tem certeza que deseja remover esta notificação?')) {
-            fetch(`/notifications/${notificationId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-            })
-            .then(() => {
-                document.getElementById(`notification-${notificationId}`).remove();
-                location.reload();
-            })
-            .catch(error => console.error('Error:', error));
-        }
+    async function deleteNotification(notificationId) {
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Remover notificação',
+            message: 'Tem certeza que deseja remover esta notificação?',
+            confirmText: 'Remover',
+            confirmClass: 'btn-danger',
+        });
+        if (!confirmed) return;
+
+        fetch(`/notifications/${notificationId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+        })
+        .then(() => {
+            document.getElementById(`notification-${notificationId}`)?.remove();
+            window.DiscoforUI.showToast('Notificação removida.', 'success');
+            setTimeout(() => location.reload(), 400);
+        })
+        .catch(() => window.DiscoforUI.showToast('Erro ao remover notificação.', 'error'));
     }
 
     function markAllAsRead() {
@@ -203,8 +266,11 @@
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
             },
         })
-        .then(() => location.reload())
-        .catch(error => console.error('Error:', error));
+        .then(() => {
+            window.DiscoforUI.showToast('Todas as notificações foram marcadas como lidas.', 'success');
+            setTimeout(() => location.reload(), 400);
+        })
+        .catch(() => window.DiscoforUI.showToast('Erro ao atualizar notificações.', 'error'));
     }
 </script>
 @endpush

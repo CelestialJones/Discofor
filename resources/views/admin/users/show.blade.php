@@ -1,25 +1,27 @@
 @extends('layouts.app')
 
+@section('title', 'Admin - Usuário')
+
 @section('content')
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <!-- Header -->
     <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="h3">
-                <i class="bi bi-person"></i> Detalhes do Usuário
-            </h1>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar
-            </a>
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-person me-1"></i> Detalhes do Usuário
+                </h1>
+                <a href="{{ route('admin.users') }}" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-1"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row">
         <!-- User Profile -->
         <div class="col-lg-4 mb-4">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card">
                 <div class="card-body text-center">
                     @if($user->avatar)
                         <img src="{{ asset('storage/' . $user->avatar) }}"
@@ -194,7 +196,7 @@
 
             <!-- Recent Activity -->
             @if($user->activityLogs()->count() > 0)
-                <div class="card border-0 shadow-sm">
+                <div class="surface-card">
                     <div class="card-header bg-light">
                         <h6 class="mb-0">Atividade Recente</h6>
                     </div>
@@ -229,7 +231,6 @@
             </div>
             <form id="roleForm">
                 @csrf
-                @method('PUT')
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="role" class="form-label">Função</label>
@@ -251,6 +252,21 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const roleForm = document.getElementById('roleForm');
+
+    function setButtonLoading(button, loading) {
+        if (!button) return;
+        if (loading) {
+            button.dataset.originalHtml = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processando...';
+        } else {
+            button.disabled = false;
+            button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+        }
+    }
+
     // Role change modal
     const roleModal = document.getElementById('roleModal');
     roleModal.addEventListener('show.bs.modal', function(event) {
@@ -263,29 +279,66 @@ document.addEventListener('DOMContentLoaded', function() {
         form.querySelector('#role').value = userRole;
     });
 
+    roleForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const submitButton = roleForm.querySelector('button[type="submit"]');
+        setButtonLoading(submitButton, true);
+
+        try {
+            const response = await fetch(roleForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: new FormData(roleForm),
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Erro ao alterar função');
+            window.DiscoforUI.showToast(data.message || 'Função atualizada.', 'success');
+            setTimeout(() => location.reload(), 500);
+        } catch (error) {
+            window.DiscoforUI.showToast(error.message || 'Erro ao alterar função', 'error');
+            setButtonLoading(submitButton, false);
+        }
+    });
+
     // Ban/Unban users
     document.querySelectorAll('.ban-user, .unban-user').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             const userId = this.getAttribute('data-user-id');
             const action = this.classList.contains('ban-user') ? 'ban' : 'unban';
+            const actionText = action === 'ban' ? 'suspender' : 'reativar';
+            const confirmed = await window.DiscoforUI.confirmAction({
+                title: action === 'ban' ? 'Suspender usuário' : 'Reativar usuário',
+                message: `Tem certeza que deseja ${actionText} este usuário?`,
+                confirmText: action === 'ban' ? 'Suspender' : 'Reativar',
+                confirmClass: action === 'ban' ? 'btn-danger' : 'btn-success',
+            });
+            if (!confirmed) return;
 
-            if (confirm(`Tem certeza que deseja ${action === 'ban' ? 'suspender' : 'reativar'} este usuário?`)) {
-                fetch(`/admin/users/${userId}/${action}`, {
+            setButtonLoading(this, true);
+            fetch(`/admin/users/${userId}/${action}`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
                     },
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        location.reload();
+                        window.DiscoforUI.showToast(data.message || 'Ação executada com sucesso.', 'success');
+                        setTimeout(() => location.reload(), 500);
                     } else {
-                        alert('Erro ao processar a solicitação');
+                        setButtonLoading(this, false);
+                        window.DiscoforUI.showToast('Erro ao processar a solicitação', 'error');
                     }
+                })
+                .catch(() => {
+                    setButtonLoading(this, false);
+                    window.DiscoforUI.showToast('Erro ao processar a solicitação', 'error');
                 });
-            }
         });
     });
 });

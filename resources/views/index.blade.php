@@ -4,6 +4,16 @@
 @section('description', 'Compartilhe seus artigos acadêmicos, debata ideias e colabore com a comunidade científica')
 
 @section('content')
+@php
+    $likedArticleIds = [];
+    if (auth()->check() && isset($featured_articles)) {
+        $likedArticleIds = auth()->user()
+            ->likes()
+            ->whereIn('article_id', $featured_articles->pluck('id'))
+            ->pluck('article_id')
+            ->toArray();
+    }
+@endphp
 <!-- Hero Section com gradiente melhorado e animação suave -->
 <div class="container-fluid position-relative overflow-hidden" style="background: linear-gradient(145deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%); padding: 100px 20px;">
     <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
@@ -141,7 +151,7 @@
                                 {{ Str::limit($article->title, 60) }}
                             </a>
                         </h5>
-                        <p class="card-text text-muted flex-grow-1">{{ Str::limit($article->excerpt, 100) }}</p>
+                        <p class="card-text text-muted flex-grow-1">{{ Str::limit($article->content, 100) }}</p>
                         <div class="d-flex justify-content-between align-items-center pt-3 mt-3 border-top">
                             <div class="d-flex align-items-center">
                                 <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
@@ -156,7 +166,18 @@
                         <div class="d-flex gap-3 mt-3">
                             <small class="text-muted"><i class="bi bi-eye me-1"></i> {{ $article->views ?? 0 }}</small>
                             <small class="text-muted"><i class="bi bi-chat me-1"></i> {{ $article->comments_count ?? 0 }}</small>
-                            <small class="text-muted"><i class="bi bi-heart me-1"></i> {{ $article->likes_count ?? 0 }}</small>
+                            <small class="text-muted"><i class="bi bi-heart me-1"></i> <span class="home-likes-count">{{ $article->likes_count ?? 0 }}</span></small>
+                            @auth
+                                <button type="button"
+                                        class="btn btn-sm {{ in_array($article->id, $likedArticleIds) ? 'btn-primary' : 'btn-outline-primary' }} py-0 px-2 ms-auto home-like-btn"
+                                        data-url="{{ route('likes.toggle', $article) }}">
+                                    <i class="bi bi-hand-thumbs-up"></i>
+                                </button>
+                            @else
+                                <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary py-0 px-2 ms-auto">
+                                    <i class="bi bi-hand-thumbs-up"></i>
+                                </a>
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -242,119 +263,38 @@
     </div>
 </div>
 
-<!-- Footer melhorado -->
-<footer class="bg-dark text-white py-5 mt-5">
-    <div class="container">
-        <div class="row g-4 mb-4">
-            <div class="col-lg-4">
-                <h5 class="fw-bold mb-3">Discofor</h5>
-                <p class="text-secondary mb-3">Plataforma acadêmica dedicada à democratização do conhecimento científico.</p>
-                <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle">
-                        <i class="bi bi-facebook"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle">
-                        <i class="bi bi-twitter-x"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle">
-                        <i class="bi bi-linkedin"></i>
-                    </a>
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle">
-                        <i class="bi bi-github"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-2">
-                <h6 class="fw-bold mb-3">Navegação</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="{{ route('articles.index') }}" class="text-secondary text-decoration-none hover-white">Artigos</a></li>
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">Sobre Nós</a></li>
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">Contato</a></li>
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">FAQ</a></li>
-                </ul>
-            </div>
-            <div class="col-lg-2">
-                <h6 class="fw-bold mb-3">Legal</h6>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">Privacidade</a></li>
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">Termos de Uso</a></li>
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">Cookies</a></li>
-                    <li class="mb-2"><a href="#" class="text-secondary text-decoration-none hover-white">LGPD</a></li>
-                </ul>
-            </div>
-            <div class="col-lg-4">
-                <h6 class="fw-bold mb-3">Newsletter</h6>
-                <p class="text-secondary small mb-3">Receba as últimas atualizações e artigos em destaque.</p>
-                <form class="d-flex gap-2">
-                    <input type="email" class="form-control bg-dark border-secondary text-white" placeholder="Seu e-mail">
-                    <button type="submit" class="btn btn-primary">Assinar</button>
-                </form>
-            </div>
-        </div>
-        <hr class="border-secondary">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <p class="text-secondary mb-0">&copy; {{ date('Y') }} Discofor. Todos os direitos reservados.</p>
-            <div class="d-flex gap-3">
-                <a href="#" class="text-secondary text-decoration-none small hover-white">Mapa do Site</a>
-                <a href="#" class="text-secondary text-decoration-none small hover-white">Acessibilidade</a>
-                <a href="#" class="text-secondary text-decoration-none small hover-white">Carreiras</a>
-            </div>
-        </div>
-    </div>
-</footer>
+@auth
+@push('scripts')
+<script>
+    document.querySelectorAll('.home-like-btn').forEach((btn) => {
+        btn.addEventListener('click', async function () {
+            try {
+                const response = await fetch(this.dataset.url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error('Erro ao curtir artigo');
 
-<!-- Estilos customizados -->
-<style>
-.hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
-}
-.hover-white:hover {
-    color: white !important;
-    transition: color 0.3s ease;
-}
-.hover-primary:hover {
-    color: #4f46e5 !important;
-    transition: color 0.3s ease;
-}
-.bg-gradient-primary {
-    background: linear-gradient(145deg, #4f46e5, #7c3aed);
-}
-.animate__animated {
-    animation-duration: 1s;
-    animation-fill-mode: both;
-}
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translate3d(0, 30px, 0);
-    }
-    to {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-    }
-}
-@keyframes fadeInRight {
-    from {
-        opacity: 0;
-        transform: translate3d(30px, 0, 0);
-    }
-    to {
-        opacity: 1;
-        transform: translate3d(0, 0, 0);
-    }
-}
-.animate__fadeInUp {
-    animation-name: fadeInUp;
-}
-.animate__fadeInRight {
-    animation-name: fadeInRight;
-}
-</style>
-
-<!-- Bootstrap JS e dependências -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                this.classList.remove('like-animate');
+                void this.offsetWidth;
+                this.classList.add('like-animate');
+                if (data.liked) {
+                    window.DiscoforUI?.playLikeSound();
+                }
+                this.classList.toggle('btn-primary', data.liked);
+                this.classList.toggle('btn-outline-primary', !data.liked);
+                const likesLabel = this.parentElement.querySelector('.home-likes-count');
+                if (likesLabel) likesLabel.textContent = data.likes_count;
+            } catch (_) {
+                window.DiscoforUI?.showToast('Não foi possível atualizar a curtida.', 'error');
+            }
+        });
+    });
+</script>
+@endpush
+@endauth
 @endsection

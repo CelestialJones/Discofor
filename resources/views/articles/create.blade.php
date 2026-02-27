@@ -4,14 +4,17 @@
 @section('description', 'Publique seu artigo na plataforma Discofor')
 
 @section('content')
-<div class="container">
+<div class="container py-2">
     <div class="row justify-content-center py-4">
         <div class="col-lg-9">
-            <h1 class="display-6 mb-4">
-                <i class="bi bi-pencil-square"></i> Criar Novo Artigo
-            </h1>
+            <div class="page-header mb-4">
+                <h1 class="display-6 fw-bold mb-2">
+                    <i class="bi bi-pencil-square me-1"></i> Criar Novo Artigo
+                </h1>
+                <p class="mb-0 opacity-75">Preencha os campos abaixo para enviar seu artigo para revisão.</p>
+            </div>
 
-            <div class="card border-0 shadow-lg">
+            <div class="surface-card">
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('articles.store') }}" enctype="multipart/form-data">
                         @csrf
@@ -57,19 +60,6 @@
                             @enderror
                         </div>
 
-                        <!-- Image -->
-                        <div class="mb-4">
-                            <label for="image" class="form-label">Imagem de Capa (Opcional)</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                            <small class="text-muted">
-                                Selecione uma imagem para ilustrar seu artigo (PNG, JPG, JPEG, GIF, WEBP - Máx. 2MB)
-                            </small>
-                            @error('image')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <div id="image-preview" class="mt-3"></div>
-                        </div>
-
                         <!-- Tags -->
                         <div class="mb-4">
                             <label for="tags" class="form-label">Tags (Categorias)</label>
@@ -92,11 +82,11 @@
 
                         <!-- Buttons -->
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-check-circle"></i> Publicar Artigo
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Publicar Artigo
                             </button>
-                            <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary btn-lg">
-                                <i class="bi bi-x-circle"></i> Cancelar
+                            <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
                             </a>
                         </div>
 

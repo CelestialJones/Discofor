@@ -4,50 +4,47 @@
 @section('description', 'Recupere sua senha na plataforma Discofor')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center py-5">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-lg">
-                <div class="card-body p-5">
-                    <h2 class="card-title text-center mb-4">
-                        <i class="bi bi-key" style="color: #6366f1;"></i> Recuperar Senha
-                    </h2>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-5">
+                    <div class="page-header h-100 d-flex flex-column justify-content-center">
+                        <span class="badge bg-light text-primary mb-3 align-self-start">Recuperação</span>
+                        <h1 class="h2 fw-bold mb-3">Recuperar senha</h1>
+                        <p class="mb-0 opacity-75">Informe seu e-mail para receber o link de redefinição de acesso.</p>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="surface-card p-4 p-md-5">
+                        @if (session('status'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle me-1"></i> {{ session('status') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
 
-                    <p class="text-muted text-center mb-4">
-                        Esqueceu sua senha? Sem problema! Digite seu email e enviaremos um link para redefinir sua senha.
-                    </p>
+                        <form method="POST" action="{{ route('password.email') }}">
+                            @csrf
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                       id="email" name="email" value="{{ old('email') }}" required autofocus>
+                                @error('email')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                    @if (session('status'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="bi bi-check-circle"></i> {{ session('status') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                            <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                                <i class="bi bi-envelope me-1"></i> Enviar link de recuperação
+                            </button>
+                        </form>
 
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
-
-                        <!-- Email -->
-                        <div class="mb-4">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                   id="email" name="email" value="{{ old('email') }}" required autofocus>
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
-                            <i class="bi bi-envelope"></i> Enviar Link de Recuperação
-                        </button>
-                    </form>
-
-                    <hr>
-
-                    <p class="text-center text-muted mb-0">
-                        Lembrou sua senha?
-                        <a href="{{ route('login') }}" class="text-decoration-none">Faça login aqui</a>
-                    </p>
+                        <p class="text-center text-muted mb-0">
+                            Lembrou sua senha?
+                            <a href="{{ route('login') }}" class="text-decoration-none">Fazer login</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

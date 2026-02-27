@@ -1,23 +1,25 @@
 @extends('layouts.app')
 
+@section('title', 'Admin - Logs')
+
 @section('content')
-<div class="container-fluid py-5">
+<div class="container-fluid py-4">
     <!-- Header -->
     <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="h3">
-                <i class="bi bi-clock-history"></i> Logs de Atividade
-            </h1>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Voltar
-            </a>
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-clock-history me-1"></i> Logs de Atividade
+                </h1>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-1"></i> Voltar
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="card border-0 shadow-sm mb-4">
+    <div class="surface-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
@@ -42,7 +44,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="btn btn-primary w-100 h-100">
                         <i class="bi bi-search"></i> Filtrar
                     </button>
                 </div>
@@ -56,7 +58,7 @@
     </div>
 
     <!-- Logs Table -->
-    <div class="card border-0 shadow-sm">
+    <div class="surface-card">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light">

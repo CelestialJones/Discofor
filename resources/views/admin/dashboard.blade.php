@@ -4,17 +4,17 @@
 @section('description', 'Painel de controle administrativo da plataforma Discofor')
 
 @section('content')
-<div class="container-fluid py-5 bg-light">
+<div class="container-fluid py-4">
     <!-- Header com saudação -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h1 class="h2 fw-bold mb-1">
-                        <i class="bi bi-speedometer2 text-primary me-2"></i>
+                        <i class="bi bi-speedometer2 me-2"></i>
                         Painel de Administração
                     </h1>
-                    <p class="text-muted mb-0">
+                    <p class="mb-0 opacity-75">
                         <i class="bi bi-calendar3 me-1"></i> 
                         {{ now()->format('l, d F Y') }} • 
                         <i class="bi bi-clock ms-2 me-1"></i>
@@ -36,7 +36,7 @@
     <!-- Stats Cards - Primeira Linha -->
     <div class="row mb-4 g-3">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -57,7 +57,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -78,7 +78,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -99,7 +99,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -123,7 +123,7 @@
     <!-- Stats Cards - Segunda Linha -->
     <div class="row mb-4 g-3">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -144,7 +144,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -165,7 +165,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -186,7 +186,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm hover-lift rounded-4">
+            <div class="surface-card hover-lift rounded-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -210,7 +210,7 @@
     <!-- Admin Actions -->
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="surface-card rounded-4">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
                     <h5 class="fw-bold mb-0">
                         <i class="bi bi-gear-fill text-primary me-2"></i>
@@ -276,7 +276,7 @@
     <!-- Recent Activities e Usuários Recentes -->
     <div class="row mt-4 g-3">
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="surface-card rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -330,7 +330,7 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="surface-card rounded-4 h-100">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -398,7 +398,7 @@
     <!-- Artigos Recentes -->
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="surface-card rounded-4">
                 <div class="card-header bg-transparent border-0 pt-4 px-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -567,23 +567,6 @@
     </div>
 </div>
 
-<!-- Estilos customizados -->
-<style>
-.hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
-}
-.object-fit-cover {
-    object-fit: cover;
-}
-.bg-light {
-    background-color: #f8f9fa;
-}
-</style>
-
 @push('scripts')
 <script>
 function deleteArticle(articleId) {
@@ -593,7 +576,7 @@ function deleteArticle(articleId) {
         deleteForm.action = `/admin/articles/${articleId}`;
         modal.show();
     @else
-        alert('A funcionalidade de exclusão não está disponível no momento.');
+        window.DiscoforUI.showToast('A funcionalidade de exclusão não está disponível no momento.', 'warning');
     @endif
 }
 </script>

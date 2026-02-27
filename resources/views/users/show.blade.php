@@ -1,49 +1,53 @@
 @extends('layouts.app')
 
+@section('title', $user->name . ' - Perfil')
+
 @section('content')
-<div class="container py-5">
+<div class="container py-3">
     <!-- User Header -->
     <div class="row mb-5">
-        <div class="col-md-3 text-center mb-4 mb-md-0">
-            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; margin: 0 auto;">
-                <i class="bi bi-person" style="font-size: 4rem; color: #ccc;"></i>
-            </div>
-        </div>
-        <div class="col-md-9">
-            <div class="d-flex align-items-center gap-2 mb-2">
-                <h1 class="mb-0">{{ $user->name }}</h1>
-                @if($user->isAdmin())
-                    <span class="badge bg-danger">Administrador</span>
-                @endif
-            </div>
-            <p class="text-muted mb-3">
-                <i class="bi bi-envelope"></i> {{ $user->email }}
-            </p>
-            <div class="row text-center gap-3 mb-3">
-                <div class="col-auto">
-                    <strong>{{ $user->articles()->count() }}</strong>
-                    <p class="text-muted small mb-0">Artigos</p>
+        <div class="col-12">
+            <div class="page-header d-flex gap-4 align-items-start flex-wrap">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-white border-2" style="width: 120px; height: 120px;">
+                    <i class="bi bi-person" style="font-size: 3rem; color: #8ca2c2;"></i>
                 </div>
-                <div class="col-auto">
-                    <strong>{{ $user->comments()->count() }}</strong>
-                    <p class="text-muted small mb-0">Comentários</p>
-                </div>
-                <div class="col-auto">
-                    <strong>{{ $user->createdAt->diffInDays() }}</strong>
-                    <p class="text-muted small mb-0">Dias na plataforma</p>
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <h1 class="mb-0">{{ $user->name }}</h1>
+                        @if($user->isAdmin())
+                            <span class="badge bg-danger">Administrador</span>
+                        @endif
+                    </div>
+                    <p class="mb-3 opacity-75">
+                        <i class="bi bi-envelope"></i> {{ $user->email }}
+                    </p>
+                    <div class="row text-center gap-3 mb-3">
+                        <div class="col-auto">
+                            <strong>{{ $user->articles()->count() }}</strong>
+                            <p class="small mb-0 opacity-75">Artigos</p>
+                        </div>
+                        <div class="col-auto">
+                            <strong>{{ $user->comments()->count() }}</strong>
+                            <p class="small mb-0 opacity-75">Comentários</p>
+                        </div>
+                        <div class="col-auto">
+                            <strong>{{ $user->created_at->diffInDays() }}</strong>
+                            <p class="small mb-0 opacity-75">Dias na plataforma</p>
+                        </div>
+                    </div>
+                    @auth
+                        @if(auth()->user()->id !== $user->id)
+                            <a href="mailto:{{ $user->email }}" class="btn btn-light">
+                                <i class="bi bi-envelope me-1"></i> Contatar
+                            </a>
+                        @else
+                            <a href="{{ route('users.edit-profile') }}" class="btn btn-light">
+                                <i class="bi bi-pencil me-1"></i> Editar Perfil
+                            </a>
+                        @endif
+                    @endauth
                 </div>
             </div>
-            @auth
-                @if(auth()->user()->id !== $user->id)
-                    <a href="mailto:{{ $user->email }}" class="btn btn-primary">
-                        <i class="bi bi-envelope"></i> Contatar
-                    </a>
-                @else
-                    <a href="{{ route('users.edit-profile') }}" class="btn btn-primary">
-                        <i class="bi bi-pencil"></i> Editar Perfil
-                    </a>
-                @endif
-            @endauth
         </div>
     </div>
 
@@ -58,7 +62,7 @@
                 <div class="row g-3">
                     @foreach($user->articles()->published()->latest()->take(6)->get() as $article)
                         <div class="col-md-4 mb-3">
-                            <div class="card h-100 border-0 shadow-sm">
+                            <div class="card h-100 border-0 shadow-sm hover-lift">
                                 <div class="card-body">
                                     <h5 class="card-title">
                                         <a href="{{ route('articles.show', $article) }}" class="text-decoration-none">
@@ -88,7 +92,7 @@
                     </div>
                 @endif
             @else
-                <div class="alert alert-info">
+                <div class="empty-state">
                     <i class="bi bi-inbox"></i> Este usuário ainda não publicou artigos.
                 </div>
             @endif

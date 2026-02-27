@@ -4,26 +4,26 @@
 @section('description', 'Plataforma acadêmica para publicação de artigos e debates em tempo real')
 
 @section('content')
-<div class="container">
+<div class="container py-3">
     <!-- Hero Section -->
     <div class="row align-items-center py-5 mb-5">
         <div class="col-lg-6 mb-4 mb-lg-0">
-            <h1 class="display-4 fw-bold mb-3">
-                <span style="color: #6366f1;">Discofor</span>
-            </h1>
-            <h2 class="display-6 mb-3">Plataforma Acadêmica de Publicação e Debates</h2>
-            <p class="lead text-muted mb-4">
-                Publique artigos de qualidade, participe de debates em tempo real e conecte-se com a comunidade acadêmica global.
-            </p>
-            <div class="d-flex gap-3">
-                <a href="{{ route('articles.index') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-arrow-right"></i> Explorar Artigos
-                </a>
-                @if (!auth()->check())
-                    <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg">
-                        <i class="bi bi-pencil-square"></i> Começar
+            <div class="page-header">
+                <h1 class="display-4 fw-bold mb-3">Discofor</h1>
+                <h2 class="h3 mb-3">Plataforma Acadêmica de Publicação e Debates</h2>
+                <p class="lead mb-4 opacity-75">
+                    Publique artigos de qualidade, participe de debates em tempo real e conecte-se com a comunidade acadêmica global.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ route('articles.index') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-arrow-right me-1"></i> Explorar Artigos
                     </a>
-                @endif
+                    @if (!auth()->check())
+                        <a href="{{ route('register') }}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-pencil-square me-1"></i> Começar
+                        </a>
+                    @endif
+                </div>
             </div>
         </div>
         <div class="col-lg-6 text-center">
@@ -38,7 +38,7 @@
         <h2 class="text-center mb-4">Recursos Principais</h2>
 
         <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
                 <div class="card-body text-center">
                     <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #6366f1;"></i>
                     <h5 class="card-title mt-3">Publicação de Artigos</h5>
@@ -50,7 +50,7 @@
         </div>
 
         <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
                 <div class="card-body text-center">
                     <i class="bi bi-chat-dots" style="font-size: 3rem; color: #6366f1;"></i>
                     <h5 class="card-title mt-3">Debates em Tempo Real</h5>
@@ -62,7 +62,7 @@
         </div>
 
         <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
                 <div class="card-body text-center">
                     <i class="bi bi-graph-up" style="font-size: 3rem; color: #6366f1;"></i>
                     <h5 class="card-title mt-3">Análises Detalhadas</h5>
@@ -74,7 +74,7 @@
         </div>
 
         <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
                 <div class="card-body text-center">
                     <i class="bi bi-hand-thumbs-up" style="font-size: 3rem; color: #6366f1;"></i>
                     <h5 class="card-title mt-3">Sistema de Curtidas</h5>
@@ -86,7 +86,7 @@
         </div>
 
         <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
                 <div class="card-body text-center">
                     <i class="bi bi-tag" style="font-size: 3rem; color: #6366f1;"></i>
                     <h5 class="card-title mt-3">Categorias e Tags</h5>
@@ -98,7 +98,7 @@
         </div>
 
         <div class="col-md-4 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
                 <div class="card-body text-center">
                     <i class="bi bi-shield-check" style="font-size: 3rem; color: #6366f1;"></i>
                     <h5 class="card-title mt-3">Segurança</h5>

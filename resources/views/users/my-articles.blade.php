@@ -3,25 +3,27 @@
 @section('title', 'Meus Artigos - Discofor')
 
 @section('content')
-<div class="container">
+<div class="container py-2">
     <div class="row mb-4">
-        <div class="col">
-            <h1 class="display-6 mb-2">
-                <i class="bi bi-file-earmark-text"></i> Meus Artigos
-            </h1>
-            <p class="text-muted">Gerencie todos os seus artigos publicados</p>
-        </div>
-        <div class="col-auto">
-            <a href="{{ route('articles.create') }}" class="btn btn-primary">
-                <i class="bi bi-pencil-square"></i> Novo Artigo
-            </a>
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">
+                        <i class="bi bi-file-earmark-text me-1"></i> Meus Artigos
+                    </h1>
+                    <p class="mb-0 opacity-75">Gerencie seus artigos, status e desempenho de leitura.</p>
+                </div>
+                <a href="{{ route('articles.create') }}" class="btn btn-light">
+                    <i class="bi bi-pencil-square me-1"></i> Novo Artigo
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row">
         <div class="col">
             @forelse($articles as $article)
-                <div class="card mb-3 article-card">
+                <div class="surface-card mb-3 article-card">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-8">
@@ -68,9 +70,9 @@
                                     <a href="{{ route('articles.edit', $article->slug) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>
-                                    <form action="{{ route('articles.destroy', $article->slug) }}" method="POST" style="display:inline;">
+                                    <form action="{{ route('articles.destroy', $article->slug) }}" method="POST" style="display:inline;" class="delete-article-form">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja deletar este artigo?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i> Deletar
                                         </button>
                                     </form>
@@ -80,7 +82,7 @@
                     </div>
                 </div>
             @empty
-                <div class="alert alert-info">
+                <div class="empty-state">
                     <i class="bi bi-info-circle"></i> Você ainda não publicou nenhum artigo.
                     <a href="{{ route('articles.create') }}" class="alert-link">Criar artigo agora</a>
                 </div>
@@ -91,4 +93,21 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.querySelectorAll('.delete-article-form').forEach((form) => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const confirmed = await window.DiscoforUI.confirmAction({
+                title: 'Excluir artigo',
+                message: 'Tem certeza que deseja deletar este artigo?',
+                confirmText: 'Excluir',
+                confirmClass: 'btn-danger',
+            });
+            if (confirmed) form.submit();
+        });
+    });
+</script>
+@endpush
 @endsection

@@ -14,14 +14,29 @@ class SearchController extends Controller
      */
     public function search(Request $request)
     {
-        $query = $request->input('q');
+        $query = trim((string) $request->input('q', ''));
         $type = $request->input('type', 'articles');
         $sort = $request->input('sort', 'latest');
         $tag = $request->input('tag');
         $author = $request->input('author');
+        $explicitType = $request->filled('type');
 
         if (!$query && !$tag && !$author) {
             return redirect()->route('articles.index');
+        }
+
+        // Global search UX: when query matches one user exactly, go straight to profile.
+        if ($query && !$explicitType && !$tag && !$author) {
+            $exactUser = User::where('is_suspended', false)
+                ->where(function ($q) use ($query) {
+                    $q->whereRaw('LOWER(name) = ?', [mb_strtolower($query)])
+                        ->orWhereRaw('LOWER(email) = ?', [mb_strtolower($query)]);
+                })
+                ->first();
+
+            if ($exactUser) {
+                return redirect()->route('users.show', $exactUser);
+            }
         }
 
         $results = collect();
@@ -32,7 +47,6 @@ class SearchController extends Controller
             if ($query) {
                 $articlesQuery->where(function ($q) use ($query) {
                     $q->where('title', 'like', "%{$query}%")
-                      ->orWhere('excerpt', 'like', "%{$query}%")
                       ->orWhere('content', 'like', "%{$query}%");
                 });
             }
@@ -70,11 +84,13 @@ class SearchController extends Controller
         }
 
         if ($type === 'users' || $type === 'all') {
-            $usersQuery = User::where('is_banned', false);
+            $usersQuery = User::where('is_suspended', false);
 
             if ($query) {
-                $usersQuery->where('name', 'like', "%{$query}%")
-                          ->orWhere('email', 'like', "%{$query}%");
+                $usersQuery->where(function ($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('email', 'like', "%{$query}%");
+                });
             }
 
             $users = $usersQuery->paginate(12);
@@ -104,6 +120,8 @@ class SearchController extends Controller
             'query',
             'type',
             'sort',
+            'tag',
+            'author',
             'articles',
             'users',
             'tags',
@@ -129,7 +147,7 @@ class SearchController extends Controller
             ->get(['id', 'title', 'slug']);
 
         $users = User::where('name', 'like', "%{$query}%")
-            ->where('is_banned', false)
+            ->where('is_suspended', false)
             ->limit(5)
             ->get(['id', 'name']);
 

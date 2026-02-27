@@ -1,27 +1,31 @@
 @extends('layouts.app')
 
+@section('title', 'Busca - Discofor')
+
 @section('content')
-<div class="container py-5">
+<div class="container py-3">
     <!-- Search Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="h3 mb-3">
-                <i class="bi bi-search"></i> Resultados da Busca
-            </h1>
-            <p class="text-muted">
-                @if($query)
-                    Resultados para: <strong>"{{ $query }}"</strong>
-                @else
-                    Resultados da busca
-                @endif
-            </p>
+            <div class="page-header">
+                <h1 class="h3 mb-2">
+                    <i class="bi bi-search me-1"></i> Resultados da Busca
+                </h1>
+                <p class="mb-0 opacity-75">
+                    @if($query)
+                        Resultados para: <strong>"{{ $query }}"</strong>
+                    @else
+                        Resultados da busca
+                    @endif
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- Filters and Sort -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
+            <div class="surface-card">
                 <div class="card-body">
                     <form method="GET" class="row g-3">
                         <div class="col-md-3">
@@ -97,7 +101,7 @@
                     <div class="row g-3">
                         @foreach($articles as $article)
                             <div class="col-md-6 col-lg-4">
-                                <div class="card h-100 border-0 shadow-sm">
+                                <div class="card h-100 border-0 shadow-sm hover-lift">
                                     <div class="card-body">
                                         <h5 class="card-title">
                                             <a href="{{ route('articles.show', $article) }}" class="text-decoration-none">
@@ -136,7 +140,7 @@
                         </div>
                     @endif
                 @elseif($type === 'articles')
-                    <div class="alert alert-info">
+                    <div class="empty-state">
                         <i class="bi bi-inbox"></i> Nenhum artigo encontrado.
                     </div>
                 @endif
@@ -156,7 +160,7 @@
                     <div class="row g-3">
                         @foreach($users as $user)
                             <div class="col-md-6 col-lg-4">
-                                <div class="card h-100 border-0 shadow-sm">
+                                <div class="card h-100 border-0 shadow-sm hover-lift">
                                     <div class="card-body text-center">
                                         <div class="mb-3">
                                             <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"
@@ -195,7 +199,7 @@
                         </div>
                     @endif
                 @elseif($type === 'users')
-                    <div class="alert alert-info">
+                    <div class="empty-state">
                         <i class="bi bi-inbox"></i> Nenhum usuário encontrado.
                     </div>
                 @endif
@@ -215,7 +219,7 @@
                     <div class="row g-3">
                         @foreach($tags as $t)
                             <div class="col-md-3">
-                                <div class="card h-100 border-0 shadow-sm">
+                                <div class="card h-100 border-0 shadow-sm hover-lift">
                                     <div class="card-body">
                                         <h5 class="card-title">
                                             <a href="{{ route('search.search', ['tag' => $t->slug]) }}" class="text-decoration-none">
@@ -237,7 +241,7 @@
                         </div>
                     @endif
                 @elseif($type === 'tags')
-                    <div class="alert alert-info">
+                    <div class="empty-state">
                         <i class="bi bi-inbox"></i> Nenhuma tag encontrada.
                     </div>
                 @endif
@@ -247,7 +251,7 @@
 
     <!-- No Results -->
     @if(($articles && $articles->count() === 0) && ($users && $users->count() === 0) && ($tags && $tags->count() === 0))
-        <div class="alert alert-warning text-center py-5">
+        <div class="empty-state">
             <i class="bi bi-search" style="font-size: 2rem;"></i>
             <p class="mt-2">Nenhum resultado encontrado para sua busca.</p>
         </div>
