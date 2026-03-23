@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attachment;
 use App\Models\Article;
 use App\Models\User;
 use App\Models\Comment;
@@ -27,6 +28,7 @@ class AdminController extends Controller
         $stats = [
             'total_users' => User::count(),
             'total_articles' => Article::count(),
+            'articles_with_pdf' => Attachment::count(),
             'total_comments' => Comment::count(),
             'total_debates' => Debate::count(),
             'published_articles' => Article::where('status', 'published')->count(),
@@ -144,7 +146,7 @@ class AdminController extends Controller
      */
     public function articles(Request $request)
     {
-        $query = Article::query();
+        $query = Article::query()->with(['user', 'attachment']);
 
         if ($request->filled('search')) {
             $query->where('title', 'like', "%{$request->search}%");
@@ -154,7 +156,17 @@ class AdminController extends Controller
             $query->where('status', $request->status);
         }
 
-        $articles = $query->with('user')->latest()->paginate(15);
+        if ($request->filled('has_pdf')) {
+            if ($request->has_pdf === 'yes') {
+                $query->has('attachment');
+            }
+
+            if ($request->has_pdf === 'no') {
+                $query->doesntHave('attachment');
+            }
+        }
+
+        $articles = $query->latest()->paginate(15)->withQueryString();
 
         return view('admin.articles.index', compact('articles'));
     }
@@ -215,6 +227,27 @@ class AdminController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Artigo deletado com sucesso!']);
+    }
+
+    /**
+     * Remove the PDF attachment from an article without deleting the article.
+     */
+    public function deleteAttachment(Article $article)
+    {
+        if (!$article->attachment) {
+            return response()->json(['success' => false, 'message' => 'Este artigo não possui PDF anexado.'], 404);
+        }
+
+        $fileName = $article->attachment->original_name;
+        $article->attachment->delete();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'article_attachment_deleted',
+            'description' => "O PDF '{$fileName}' foi removido do artigo '{$article->title}'",
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'PDF removido com sucesso!']);
     }
 
     /**

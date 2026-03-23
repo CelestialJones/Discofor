@@ -16,6 +16,9 @@ Route::get('/articles', [ArticleController::class, 'index'])->name('articles.ind
 Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create')->middleware('auth');
 Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store')->middleware('auth');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/articles/{article:slug}/pdf', [ArticleController::class, 'downloadPdf'])->name('articles.pdf');
+Route::get('/articles/{article:slug}/attachment/view', [ArticleController::class, 'viewAttachment'])->name('articles.attachment.view');
+Route::get('/articles/{article:slug}/download', [ArticleController::class, 'download'])->name('articles.download')->middleware('auth');
 Route::get('/articles/{article:slug}/edit', [ArticleController::class, 'edit'])->name('articles.edit')->middleware('auth');
 Route::put('/articles/{article:slug}', [ArticleController::class, 'update'])->name('articles.update')->middleware('auth');
 Route::delete('/articles/{article:slug}', [ArticleController::class, 'destroy'])->name('articles.destroy')->middleware('auth');
@@ -73,6 +76,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/articles', [\App\Http\Controllers\Admin\AdminController::class, 'articles'])->name('articles');
     Route::post('/articles/{article}/approve', [\App\Http\Controllers\Admin\AdminController::class, 'approveArticle'])->name('articles.approve');
     Route::post('/articles/{article}/reject', [\App\Http\Controllers\Admin\AdminController::class, 'rejectArticle'])->name('articles.reject');
+    Route::delete('/articles/{article}/attachment', [\App\Http\Controllers\Admin\AdminController::class, 'deleteAttachment'])->name('articles.attachment.delete');
     Route::delete('/articles/{article}', [\App\Http\Controllers\Admin\AdminController::class, 'deleteArticle'])->name('articles.delete');
     
     // Comments Moderation

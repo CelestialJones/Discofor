@@ -46,4 +46,12 @@ class ArticlePolicy
     {
         return $user->id === $article->user_id || $user->isAdmin();
     }
+
+    /**
+     * Determine whether the user can download the article attachment.
+     */
+    public function downloadAttachment(User $user, Article $article): bool
+    {
+        return $article->status === 'published' || $user->id === $article->user_id || $user->isAdmin();
+    }
 }

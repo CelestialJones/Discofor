@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -61,6 +62,11 @@ class Article extends Model
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class);
+    }
+
+    public function attachment(): HasOne
+    {
+        return $this->hasOne(Attachment::class);
     }
 
     public function debates(): HasMany
@@ -125,5 +131,15 @@ class Article extends Model
     public function getFeaturedImageAttribute(): ?string
     {
         return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
+    /**
+     * Determine whether the article has an attached PDF.
+     */
+    public function hasAttachment(): bool
+    {
+        return $this->relationLoaded('attachment')
+            ? $this->attachment !== null
+            : $this->attachment()->exists();
     }
 }

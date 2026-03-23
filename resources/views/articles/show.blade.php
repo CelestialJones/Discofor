@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $article->title . ' - Discofor')
-@section('description', Str::limit($article->content, 160))
+@section('description', Str::limit($article->content ?: ('Leitura em PDF do artigo ' . $article->title), 160))
 
 @section('content')
 <div class="container py-4">
@@ -58,13 +58,66 @@
                     </div>
                 @endif
 
-                <!-- Article Content -->
-                <div class="article-content mb-5" style="line-height: 1.8; font-size: 1.1rem;">
-                    {!! nl2br(e($article->content)) !!}
-                </div>
+                @if(filled($article->content))
+                    <div class="article-content mb-5" style="line-height: 1.8; font-size: 1.1rem;">
+                        {!! nl2br(e($article->content)) !!}
+                    </div>
+                @endif
+
+                @if($article->attachment)
+                    <div class="alert alert-light border d-flex flex-column flex-md-row gap-3 justify-content-between align-items-md-center mb-4">
+                        <div>
+                            <div class="fw-semibold mb-1">
+                                <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF Anexado
+                            </div>
+                            <div>{{ $article->attachment->original_name }}</div>
+                            <small class="text-muted">{{ $article->attachment->human_size }}</small>
+                        </div>
+
+                        @auth
+                            <a href="{{ route('articles.download', $article->slug) }}" class="btn btn-primary">
+                                <i class="bi bi-download me-1"></i> Baixar PDF
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Inicie sessao para baixar
+                            </a>
+                        @endauth
+                    </div>
+
+                    <div class="surface-card mb-5">
+                        <div class="card-body p-3 p-md-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div>
+                                    <h5 class="mb-1">Ler PDF na plataforma</h5>
+                                    <small class="text-muted">O documento pode ser lido diretamente abaixo, sem necessidade de download.</small>
+                                </div>
+                                <a href="{{ route('articles.attachment.view', $article->slug) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Abrir em nova aba
+                                </a>
+                            </div>
+
+                            <div class="border rounded overflow-hidden bg-light">
+                                <iframe
+                                    src="{{ route('articles.attachment.view', $article->slug) }}"
+                                    title="Leitor de PDF"
+                                    style="width: 100%; height: 900px; border: 0;"
+                                ></iframe>
+                            </div>
+                        </div>
+                    </div>
+                @elseif(blank($article->content))
+                    <div class="empty-state mb-5">
+                        <i class="bi bi-file-earmark-x"></i> Este artigo nao possui texto nem PDF disponivel para leitura.
+                    </div>
+                @endif
 
                 <!-- Article Footer -->
                 <div class="d-flex gap-2 align-items-center mb-5 pb-3 border-bottom">
+                    <a href="{{ route('articles.pdf', $article->slug) }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-filetype-pdf"></i> Descarregar Artigo em PDF
+                    </a>
+
                     <button class="btn {{ $isLiked ? 'btn-primary' : 'btn-outline-primary' }}" id="like-btn" onclick="toggleLike()">
                         <i class="bi bi-hand-thumbs-up"></i> <span id="likes-count">{{ $article->likes()->count() }}</span>
                     </button>

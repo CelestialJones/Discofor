@@ -25,6 +25,7 @@ class StoreArticleRequest extends FormRequest
             'title' => 'required|string|max:255',
             'content' => 'required|string|min:100|max:50000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'pdf' => 'nullable|file|mimetypes:application/pdf|mimes:pdf|max:10240',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ];
@@ -44,6 +45,9 @@ class StoreArticleRequest extends FormRequest
             'image.image' => 'O arquivo deve ser uma imagem.',
             'image.mimes' => 'A imagem deve ser JPG, PNG ou GIF.',
             'image.max' => 'A imagem não deve ser maior que 2MB.',
+            'pdf.mimetypes' => 'O anexo deve ser um arquivo PDF válido.',
+            'pdf.mimes' => 'O anexo deve estar no formato PDF.',
+            'pdf.max' => 'O PDF não deve ser maior que 10MB.',
             'tags.array' => 'As tags devem ser um array.',
             'tags.*.exists' => 'Uma ou mais tags selecionadas não existem.',
         ];

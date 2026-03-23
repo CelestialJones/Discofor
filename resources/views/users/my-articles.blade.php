@@ -40,6 +40,11 @@
                                     @foreach($article->tags as $tag)
                                         <span class="badge bg-light text-dark">{{ $tag->name }}</span>
                                     @endforeach
+                                    @if($article->attachment)
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            <i class="bi bi-file-earmark-pdf"></i> PDF anexado
+                                        </span>
+                                    @endif
                                 </div>
                                 <small class="text-muted">
                                     <i class="bi bi-calendar"></i> {{ $article->created_at->format('d/m/Y H:i') }}
@@ -67,6 +72,11 @@
                                     <a href="{{ route('articles.show', $article->slug) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-eye"></i> Ver
                                     </a>
+                                    @if($article->status === 'published')
+                                        <a href="{{ route('articles.pdf', $article->slug) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-filetype-pdf"></i> PDF
+                                        </a>
+                                    @endif
                                     <a href="{{ route('articles.edit', $article->slug) }}" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i> Editar
                                     </a>

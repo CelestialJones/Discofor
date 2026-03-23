@@ -17,6 +17,11 @@
                     <i class="bi bi-hourglass"></i> Pendente
                 </span>
             @endif
+            @if($article->attachment)
+                <span class="badge bg-danger-subtle text-danger">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </span>
+            @endif
             @foreach($article->tags->take(3) as $tag)
                 <a href="{{ route('articles.index', ['tag' => $tag->id]) }}" class="badge bg-light text-primary text-decoration-none">
                     {{ $tag->name }}

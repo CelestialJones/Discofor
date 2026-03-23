@@ -87,6 +87,12 @@
                                             {{ $tag->name }}
                                         </a>
                                     @endforeach
+                                    @if($article->status === 'published')
+                                        <a href="{{ route('articles.pdf', $article->slug) }}"
+                                           class="badge bg-danger text-decoration-none">
+                                            <i class="bi bi-filetype-pdf"></i> PDF
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                             <div class="card-footer bg-white border-top px-4 py-3">
@@ -98,6 +104,11 @@
                                     {{ $article->created_at->format('d/m/Y') }}
                                 </small>
                                 <div class="mt-2 d-flex gap-2">
+                                    @if($article->status === 'published')
+                                        <a href="{{ route('articles.pdf', $article->slug) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-filetype-pdf"></i>
+                                        </a>
+                                    @endif
                                     <span class="badge bg-light text-dark">
                                         <i class="bi bi-eye"></i> {{ $article->views }}
                                     </span>

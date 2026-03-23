@@ -35,11 +35,18 @@
                     </select>
                 </div>
                 <div class="col-md-2">
+                    <select name="has_pdf" class="form-select">
+                        <option value="">Com ou sem PDF</option>
+                        <option value="yes" @if(request('has_pdf') === 'yes') selected @endif>Com PDF</option>
+                        <option value="no" @if(request('has_pdf') === 'no') selected @endif>Sem PDF</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <button type="submit" class="btn btn-primary w-100 h-100">
                         <i class="bi bi-search"></i> Filtrar
                     </button>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-1">
                     <a href="{{ route('admin.articles') }}" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-clockwise"></i> Limpar
                     </a>
@@ -57,6 +64,7 @@
                         <th>Título</th>
                         <th>Autor</th>
                         <th>Status</th>
+                        <th>PDF</th>
                         <th>Views</th>
                         <th>Data</th>
                         <th>Ações</th>
@@ -74,13 +82,40 @@
                                     {{ ucfirst($article->status) }}
                                 </span>
                             </td>
+                            <td>
+                                @if($article->attachment)
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                                        </span>
+                                        <small class="text-muted">{{ $article->attachment->original_name }}</small>
+                                        <small class="text-muted">{{ $article->attachment->human_size }}</small>
+                                    </div>
+                                @else
+                                    <span class="text-muted">Sem anexo</span>
+                                @endif
+                            </td>
                             <td>{{ $article->views_count ?? 0 }}</td>
                             <td>{{ $article->created_at->format('d/m/Y H:i') }}</td>
                             <td>
-                                <div class="btn-group btn-group-sm">
+                                <div class="d-flex flex-wrap gap-1">
                                     <a href="{{ route('articles.show', $article) }}" class="btn btn-outline-primary">
                                         <i class="bi bi-eye"></i> Ver
                                     </a>
+                                    @if($article->status === 'published')
+                                        <a href="{{ route('articles.pdf', $article->slug) }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-filetype-pdf"></i> Artigo PDF
+                                        </a>
+                                    @endif
+                                    @if($article->attachment)
+                                        <a href="{{ route('articles.download', $article->slug) }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-download"></i> PDF
+                                        </a>
+                                        <button type="button" class="btn btn-outline-warning remove-attachment"
+                                                data-article-id="{{ $article->id }}">
+                                            <i class="bi bi-paperclip"></i> Remover PDF
+                                        </button>
+                                    @endif
                                     @if($article->status === 'pending')
                                         <button type="button" class="btn btn-outline-success approve-article"
                                                 data-article-id="{{ $article->id }}">
@@ -100,7 +135,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
+                            <td colspan="7" class="text-center py-4 text-muted">
                                 Nenhum artigo encontrado
                             </td>
                         </tr>
@@ -184,6 +219,19 @@ document.querySelectorAll('.delete-article').forEach(btn => {
         });
         if (!confirmed) return;
         runArticleAction(`/admin/articles/${this.dataset.articleId}`, this, 'DELETE', 'Artigo deletado!', 'Erro ao deletar artigo');
+    });
+});
+
+document.querySelectorAll('.remove-attachment').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const confirmed = await window.DiscoforUI.confirmAction({
+            title: 'Remover PDF',
+            message: 'Deseja remover apenas o PDF deste artigo? O artigo continuará publicado.',
+            confirmText: 'Remover PDF',
+            confirmClass: 'btn-warning',
+        });
+        if (!confirmed) return;
+        runArticleAction(`/admin/articles/${this.dataset.articleId}/attachment`, this, 'DELETE', 'PDF removido!', 'Erro ao remover PDF');
     });
 });
 </script>

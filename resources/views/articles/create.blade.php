@@ -19,6 +19,41 @@
                     <form method="POST" action="{{ route('articles.store') }}" enctype="multipart/form-data">
                         @csrf
 
+                        @php($publishMode = old('publish_mode', 'text'))
+
+                        <div class="mb-4">
+                            <label class="form-label d-block">Tipo de Publicacao</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="surface-card d-block p-3 h-100 publish-mode-card" for="publish-mode-text">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="publish_mode" id="publish-mode-text"
+                                                   value="text" {{ $publishMode === 'text' ? 'checked' : '' }}>
+                                            <span class="fw-semibold ms-1">Artigo em Texto</span>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Ideal para escrever o conteudo diretamente na plataforma.
+                                        </small>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="surface-card d-block p-3 h-100 publish-mode-card" for="publish-mode-pdf">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="publish_mode" id="publish-mode-pdf"
+                                                   value="pdf" {{ $publishMode === 'pdf' ? 'checked' : '' }}>
+                                            <span class="fw-semibold ms-1">Artigo em PDF</span>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Publica com titulo, imagem, categorias e ficheiro PDF.
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                            @error('publish_mode')
+                                <div class="text-danger small mt-2">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Title -->
                         <div class="mb-4">
                             <label for="title" class="form-label">Título</label>
@@ -44,15 +79,28 @@
                             @enderror
                         </div>
 
+                        <!-- PDF Attachment -->
+                        <div class="mb-4 pdf-field">
+                            <label for="pdf" class="form-label">Arquivo PDF</label>
+                            <input type="file" class="form-control @error('pdf') is-invalid @enderror"
+                                   id="pdf" name="pdf" accept="application/pdf,.pdf">
+                            <small class="text-muted">
+                                No modo PDF este ficheiro e obrigatorio. Tamanho maximo: 10MB.
+                            </small>
+                            @error('pdf')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Content -->
-                        <div class="mb-4">
+                        <div class="mb-4 text-field">
                             <label for="content" class="form-label">Conteúdo</label>
                             <textarea class="form-control @error('content') is-invalid @enderror"
-                                      id="content" name="content" rows="12" required
+                                      id="content" name="content" rows="12"
                                       placeholder="Digite o conteúdo do seu artigo aqui..."
-                                      minlength="100" maxlength="50000">{{ old('content') }}</textarea>
+                                      maxlength="50000">{{ old('content') }}</textarea>
                             <small class="text-muted d-block mt-2">
-                                Mínimo 100 caracteres | Máximo 50.000 caracteres
+                                O texto e opcional se houver PDF. Quando preenchido, deve ter no minimo 100 caracteres.
                                 <span id="char-count">0</span> / 50.000
                             </small>
                             @error('content')
@@ -105,6 +153,25 @@
 
 @push('scripts')
 <script>
+    const publishModeInputs = document.querySelectorAll('input[name="publish_mode"]');
+    const pdfField = document.querySelector('.pdf-field');
+    const textField = document.querySelector('.text-field');
+    const pdfInput = document.getElementById('pdf');
+
+    function syncPublishMode() {
+        const selectedMode = document.querySelector('input[name="publish_mode"]:checked')?.value || 'text';
+        const isPdfMode = selectedMode === 'pdf';
+
+        textField.style.display = isPdfMode ? 'none' : '';
+        pdfField.style.display = isPdfMode ? '' : 'none';
+        contentArea.required = !isPdfMode;
+        pdfInput.required = isPdfMode;
+    }
+
+    publishModeInputs.forEach((input) => {
+        input.addEventListener('change', syncPublishMode);
+    });
+
     // Character counter
     const contentArea = document.getElementById('content');
     const charCount = document.getElementById('char-count');
@@ -115,6 +182,7 @@
 
     // Initialize counter
     charCount.textContent = contentArea.value.length;
+    syncPublishMode();
 
     // Image preview
     const imageInput = document.getElementById('image');

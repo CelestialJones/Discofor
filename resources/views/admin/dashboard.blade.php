@@ -118,6 +118,27 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3">
+            <div class="surface-card hover-lift rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small text-uppercase fw-semibold">Artigos com PDF</p>
+                            <h2 class="fw-bold mb-0">{{ number_format($stats['articles_with_pdf'] ?? 0, 0, ',', '.') }}</h2>
+                            <div class="mt-2">
+                                <span class="badge bg-danger bg-opacity-10 text-danger small">
+                                    <i class="bi bi-file-earmark-pdf"></i> Anexos moderaveis
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 rounded-3 p-3">
+                            <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Stats Cards - Segunda Linha -->
